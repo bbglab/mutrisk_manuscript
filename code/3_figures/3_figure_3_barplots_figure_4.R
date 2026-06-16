@@ -15,7 +15,9 @@ metadata = lapply(metadata_files, \(x) fread(x)[,c("sampleID", "category", "age"
 # Load gene_of_interest boostdm
 boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "lung|colon|CH", full.names = TRUE)
 names(boostdm_files) = c("blood", "colon", "lung")
-boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(driver == TRUE, "driver", "non-driver")))# change names for overview
+# boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(driver == TRUE, "driver", "non-driver")))# change names for overview
+boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(boostDM_class == TRUE, "driver", "non-driver")))# change names for overview
+
 
 # load the mutation rates
 expected_rate_list = list()
@@ -84,6 +86,19 @@ barplot_blood = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_inter
                                   tissue_name = "Blood", cell_probabilities = FALSE) + labs(y = NULL)
 F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
 saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
+
+# Supplementary table for figure 3B: count unique TP53 genomic sites per tissue by driver/non-driver status
+# Site = chr:pos:ref:alt (unique row in boostdm)
+tp53_site_counts = lapply(names(boostdm), function(t) {
+  tp53_data = boostdm[[t]][gene_name == "TP53"]
+  data.table(
+    tissue = t,
+    driver_sites = tp53_data[driver == "driver", .N],
+    nondriver_sites = tp53_data[driver == "non-driver", .N]
+  )
+}) |> rbindlist()
+
+saveRDS(tp53_site_counts, "manuscript/figure_panels/figure_3/figure_3B_table.rds")
 
 # Supplementary Figure 2 - TP53 for all tissues
 tissue_categories = ratios |> select(tissue, category) |> distinct()
