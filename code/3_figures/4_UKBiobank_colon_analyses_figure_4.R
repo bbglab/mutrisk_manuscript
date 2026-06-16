@@ -157,6 +157,15 @@ apc_single_snv = expected_rates_normal |>
   summarize(across(c(mle, cilow, cihigh), mean), .groups = "drop_last") |>
   summarize(across(c(mle, cilow, cihigh), sum), .groups = "drop")
 
+# Combination of single APC + single KRAS driver mutations
+apc_kras = apc_single_snv |>
+  left_join(KRAS_single_snv |> select(donor, category, mle_kras = mle, cilow_kras = cilow, cihigh_kras = cihigh),
+            by = c("donor", "category")) |>
+  mutate(mle = mle * mle_kras,
+         cilow = cilow * cilow_kras,
+         cihigh = cihigh * cihigh_kras) |>
+  select(-mle_kras, -cilow_kras, -cihigh_kras)
+
 apc_muts_estimated = apc_single_snv |>
   mutate(mle = mle * ncells) |>
   filter(age > 35) |>
@@ -177,6 +186,37 @@ apc_muts_estimated_35 = apc_muts_estimated |> filter(age > 35)
 apc_muts_estimated$mle |> max()
 apc_muts_estimated$mle |> min()
 apc_muts_estimated$mle |> mean()
+
+# Expected number of cells with double mutations: TP53
+tp53_counts_boostdm = colon_bDM[gene_name == "TP53" & driver == TRUE, .N, by = c("gene_name", "mut_type",  "driver")]
+
+tp53_single_snv = expected_rates_normal |>
+  left_join(ratios |> filter(gene_name == "TP53")) |>
+  left_join(metadata) |>
+  inner_join(tp53_counts_boostdm |> filter(driver), by = "mut_type", relationship = "many-to-many") |>
+  mutate(across(c(mle, cilow, cihigh), ~ . * N * ratio)) |>
+  group_by(category, donor, age,  mut_type) |>
+  summarize(across(c(mle, cilow, cihigh), mean), .groups = "drop_last") |>
+  summarize(across(c(mle, cilow, cihigh), sum), .groups = "drop")
+
+tp53_muts_estimated = tp53_single_snv |>
+  mutate(mle = mle * ncells) |>
+  filter(age > 35) |>
+  arrange(mle) |>
+  as.data.table()
+tp53_muts_estimated$mle |> max()
+tp53_muts_estimated$mle |> min()
+tp53_muts_estimated$mle |> mean()
+
+
+tp53_muts_estimated = tp53_single_snv |>
+  mutate(mle = mle * ncells) |>
+  filter(age == 60) |>
+  arrange(mle) |>
+  as.data.table()
+tp53_muts_estimated$mle |> max()
+tp53_muts_estimated$mle |> min()
+tp53_muts_estimated$mle |> mean()
 
 apc_muts_estimated_60 = apc_muts_estimated |> filter(age > 35)
 apc_muts_estimated_60$mle |> max()
@@ -477,4 +517,3 @@ saveRDS(figure_S6A, "manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds")
 # summary plot comparing the mutational load
 supplementerary_figure_B = prep_plot(figure_no_SBS89, "B")
 figure_S6A + supplementerary_figure_B
-
