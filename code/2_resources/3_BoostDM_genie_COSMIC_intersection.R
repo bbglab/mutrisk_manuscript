@@ -110,7 +110,7 @@ euler_boostdm_cancer_present = function(boostdm_cancer, title) {
 tissue = "pancancer"
 bDM_cancer_intersect = intersect_boostDM_cancer(boostdm_cohort = boostdm_hg19[cohort == "CANCER"],
                                                 cosmic_cohort = COSMIC_cancer_type,  genie_cohort = genie_cancer_type)
-fwrite(bDM_cancer_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt.gz"))
+fwrite(bDM_cancer_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt"))
 
 
 ##### Colon ######
@@ -120,7 +120,7 @@ cosmic_cohort = COSMIC_cancer_type |> filter(PRIMARY_SITE == "large_intestine")
 genie_cohort =  genie_cancer_type |>   filter(ONCOTREE_CODE %in% c("COAD", "READ", "COADREAD"))
 
 bDM_colon_intersect = intersect_boostDM_cancer(boostdm_colon, cosmic_cohort, genie_cohort)
-fwrite(bDM_colon_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt.gz"))
+fwrite(bDM_colon_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt"))
 
 # make supplementary figure S3
 euler_boostdm_cancer_present(bDM_colon_intersect |> filter(gene_name == "TP53"),
@@ -138,7 +138,7 @@ boostdm_lung = boostdm_hg19[cohort == "LUNG", ]
 cosmic_cohort = COSMIC_cancer_type |> filter(PRIMARY_SITE == "lung")
 genie_cohort =  genie_cancer_type |>   filter(CANCER_TYPE %in% c("Non-Small Cell Lung Cancer", "Small Cell Lung Cancer", "Lung Cancer"))
 bDM_lung_intersect = intersect_boostDM_cancer(boostdm_lung, cosmic_cohort, genie_cohort)
-fwrite(bDM_lung_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt.gz"))
+fwrite(bDM_lung_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt"))
 
 #### Blood #####
 tissue = "NON_SOLID"
@@ -148,7 +148,7 @@ genie_cohort =  genie_cancer_type |>   filter(CANCER_TYPE %in%  c("Leukemia", "B
                                                                   "Myelodysplastic Syndromes", "Mature T and NK Neoplasms",
                                                                   "Myelodysplastic/Myeloproliferative Neoplasms"))
 bDM_ns_intersect = intersect_boostDM_cancer(boostdm_ns, cosmic_cohort, genie_cohort)
-fwrite(bDM_ns_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt.gz"))
+fwrite(bDM_ns_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt"))
 
 # Using Clonal hematopoiesiss - Blood CH data
 boostdm_ch_hg19 = fread("processed_data/boostdm_ch/boostdm_ch_hg19.txt.gz") # BoostDM_ch_RefCDS.R script

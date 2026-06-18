@@ -64,8 +64,7 @@ cell_muts = inner_join(input_muts, metadata) |>
 
 
 vaf_overview = create_vaf_overview(cell_muts = cell_muts |> dplyr::rename(vaf = VAF), sample_names = c("PD26988", "PD37453"))
-ggsave("manuscript/Supplementary_notes/Supplementary_Note_X/figure_lung.png", vaf_overview, width = 10, height = 10)
-
+ggsave("manuscript/Supplementary_notes/Supplementary_Note_1/figure_lung.png", vaf_overview, width = 10, height = 10)
 
 # calculate the estimated coverage for each sample
 list_results = list()
@@ -76,7 +75,7 @@ for (i in unique(metadata$category)) {
 }
 
 list_plots = lapply(list_results, \(x) x[["plot"]])
-ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_I/", tissue, "_coverage_var_correction.png"),
+ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_1/", tissue, "_coverage_var_correction.png"),
        wrap_plots(list_plots, ncol = 2), width = 12, height = 7.5)
 
 

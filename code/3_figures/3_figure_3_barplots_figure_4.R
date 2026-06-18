@@ -1,6 +1,7 @@
 # Script to produce figure 3, and the barplots indicating mutation accumulatoin in figure 4
 library(MutationalPatterns)
 library(ggh4x)
+library(gt)
 source("code/0_functions/analysis_variables.R")
 getwd()
 
@@ -59,7 +60,8 @@ rates_CpG = expected_rates |>
   mutate(fold_change = CpG / `non-CpG`) |>
   arrange(fold_change) |>
   as.data.table()
-# max CpG / non-CpG rate: 30, lowest is 6
+max(rates_CpG$fold_change) ; min(rates_CpG$fold_change)
+# max CpG / non-CpG rate: 32.67651, lowest is 6.575318 ) - in text rounded as 33 and 7
 
 # print mutation rate differences CpG vs non-CpG
 cpg_muts = expected_rates |> left_join(triplet_match_substmodel) |>
@@ -82,6 +84,36 @@ barplot_lung = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_intere
                                  cell_probabilities = FALSE) + labs(x = NULL)
 barplot_blood = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "TP53", tissue_select = "blood",
                                   tissue_name = "Blood", cell_probabilities = FALSE) + labs(y = NULL)
+
+# first version of figure 3A
+F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
+saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
+
+# update figure 3A with driver numbers:
+driver_numbers = sapply(boostdm, \(x) x |> filter(gene_name == "TP53") |> pull(driver) |> table()   ) |>
+  t() |> as.data.frame() |>
+  mutate(label = paste0("  | TP53 driver SNVs: ", driver, " | non-driver SNVs: ", `non-driver`))
+# reformat driver numbers:
+driver_numbers = driver_numbers |> select(-label) |>
+  rownames_to_column("Tissue") |>
+  mutate(across(c(driver, `non-driver`), ~  format(., big.mark = ","))) |>
+  `colnames<-`(c("Tissue", "TP53 driver SNV sites", "TP53 non-driver SNV sites")) |>
+  mutate(Tissue = c("Blood", "Colon", "Lung"))
+
+cols <- c("#ff725c", "#3ca951" , "#4269d0")
+gt_driver_number = driver_numbers %>%  gt() %>%
+  text_transform(locations = cells_body(columns = 1),
+    fn = function(x) paste0('<span style="background: ', cols, '; color: white; padding: 4px 12px;
+                            border-radius: 20px; font-weight: 500; display: inline-block;">',      x, '</span>')) %>%
+  cols_width(1 ~ px(100), everything() ~ px(155)) |>
+  cols_align("center", 1) |>  tab_options(column_labels.font.weight = "bold", data_row.padding = px(10))
+
+gt_driver_number
+gtsave(gt_driver_number, "manuscript/figure_panels/figure_3/figure_3B_table.png")
+
+barplot_colon$labels$subtitle = paste0(barplot_colon$labels$subtitle, driver_numbers["colon", 3])
+barplot_lung$labels$subtitle = paste0(barplot_lung$labels$subtitle, driver_numbers["lung", 3])
+barplot_blood$labels$subtitle = paste0(barplot_blood$labels$subtitle, driver_numbers["blood", 3])
 F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
 saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
 
@@ -174,7 +206,7 @@ dotplot_df = rbindlist(dotplot_list) |>
   mutate(tissue = factor(tissue, levels = c("colon", "lung", "blood")),
                          tissue_category = paste0(tissue, "_", category))
 
-# Manuscript numbers: colon drivers TP53
+# Manuscript numbers: colon drivers TP53:
 dotplot_df |>
   filter(tissue_category == "colon_normal" & driver == "driver") |>
   left_join(metadata) |> filter(age > 35) |>
@@ -257,3 +289,45 @@ F3C
 F3C_bottom = wrap_plots(tissue_plots[-1], widths = c(2.8, 1))
 F3C = tissue_plots[[1]] / F3C_bottom
 F3C
+
+
+# Supplementary Figure: Correct for the number of cells in young individuals":
+df_tissue_cells = tissue_ncells_ci_age |>
+  dplyr::select(tissue, mid_estimate, age_category) |>
+  mutate(flat_cell_number = rep(tissue_ncells_ci_age$mid_estimate[1:3], 2))
+
+df_tissue_adult_child = df_tissue |>
+  mutate(age_category = ifelse(age > 15, "adult", "child")) |>
+  left_join(df_tissue_cells) |>
+  mutate(across(c(mle, cilow, cihigh),  ~  (./flat_cell_number) * mid_estimate))
+
+tissue_plots = tissue_plots_raw =  list()
+tissue_order = c("colon", "lung", "blood")
+for (i in 1:3) {
+
+  select_tissue = tissue_order[[i]]
+  df_tissue = df_total_muts |>
+    filter(tissue %in% select_tissue) |>
+    filter(driver == "driver")
+
+  plt = ggplot(df_tissue, aes(x = age, y = mle, color = tissue_category)) +
+    geom_pointrange(aes(ymin = cilow, ymax = cihigh)) +
+    facet_nested(. ~ tissue + category, axes = "y", remove_labels = "y") +
+    scale_color_manual(values = tissue_category_colors) +
+    scale_y_continuous(labels = scales::label_comma(), limits = c(0,NA)) +
+    theme_cowplot() +
+    theme(panel.grid = element_blank(), strip.background = element_blank(),
+          legend.position = "none", ggh4x.facet.nestline = element_line()) +
+    labs(x = "Age (years)", y = "Number of cells with\nTP53 driver mutation")
+  tissue_plots_raw[[select_tissue]] = plt
+  tissue_plots[[select_tissue]] = prep_plot(plt, LETTERS[i+2])
+}
+
+tissue_plots_raw[[2]] = tissue_plots_raw[[2]] + labs(y = NULL)
+tissue_plots_raw[[3]] = tissue_plots_raw[[3]] + labs(y = NULL)
+
+saveRDS(tissue_plots_raw, "manuscript/Supplementary_Figures/Figure_SX/figure_3CDE.rds")
+tissue_plots_raw = readRDS("manuscript/Supplementary_Figures/Figure_SX/figure_3CDE.rds")
+tissue_plots = mapply(prep_plot, tissue_plots_raw, label = c("C", "D", "E"), all_margin = 8)
+figure_3_bottom = wrap_plots(tissue_plots, nrow = 1, widths = c(4, 3, 1.2))
+ggsave("manuscript/Supplementary_Figures/Figure_SX/Supplementary_Figure_SX_TP53_counts.svg", figure_3_bottom, width = 17, height = 4)

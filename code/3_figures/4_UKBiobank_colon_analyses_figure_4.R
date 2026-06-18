@@ -111,7 +111,7 @@ KRAS_single_snv = expected_rates_normal |>
   group_by(donor, category) |>
   summarise(across(c(mle, cilow, cihigh, age), mean), groups = "drop")
 
-# Manuscript nubmers: compare TP53 vs BRAF mutation
+# Manuscript nubmers: compare TP53 R175H: normal min: 62.26459 max: 727.7099 mean: 442.3734
 TP53_R = colon_bDM[gene_name == "TP53" & aachange == "R175H", .N, c("gene_name", "mut_type", "aachange", "position")]
 expected_rates_normal |>
 inner_join(TP53_R, by = "mut_type", relationship = "many-to-many") |>
@@ -120,8 +120,9 @@ inner_join(TP53_R, by = "mut_type", relationship = "many-to-many") |>
   mutate(across(c(mle, cilow, cihigh), ~ . * ratio * ncells)) |>
   group_by( category, donor) |>
   summarise(mean = mean(mle), min = min(mle), max = max(mle), .groups = "drop_last")  |>
-  summarise( min = min(mean), max = max(mean), mean = mean(mean))
+  summarise( min = min(mean), max = max(mean), mean = mean(mean)) |> as.data.frame()
 
+# Manuscript numbers: BRAF V600E mutation:  normal min: 0.3791835 max: 6.559309 mean: 2.256367
 BRAF_V600E = colon_bDM[gene_name == "BRAF" & aachange == "V600E", .N, c("gene_name", "mut_type", "aachange", "position")]
 expected_rates_normal |>
   inner_join(BRAF_V600E, by = "mut_type", relationship = "many-to-many") |>
@@ -130,9 +131,9 @@ expected_rates_normal |>
   mutate(across(c(mle, cilow, cihigh), ~ . * ratio * ncells)) |>
   group_by(category, donor) |>
   summarise(mean = mean(mle), min = min(mle), max = max(mle), .groups = "drop_last")  |>
-  summarise( min = min(mean), max = max(mean), mean = mean(mean))
+  summarise( min = min(mean), max = max(mean), mean = mean(mean)) |> as.data.frame()
 
-# Manuscript numbers  ompare TP53 vs APC mutation
+# Manuscript numbers: Colon TP53 mutations - min: 5847.626 max: 19059 mean; 12782.92
 TP53_R = colon_bDM[gene_name == "TP53" & driver == "TRUE", .N, c("gene_name", "mut_type", "aachange", "position")]
 TP53_R$N |> sum()
 expected_rates_normal |>
@@ -162,9 +163,9 @@ apc_muts_estimated = apc_single_snv |>
   filter(age > 35) |>
   arrange(mle) |>
   as.data.table()
-apc_muts_estimated$mle |> max()
-apc_muts_estimated$mle |> min()
-apc_muts_estimated$mle |> mean()
+apc_muts_estimated$mle |> max() # 32,098
+apc_muts_estimated$mle |> min() # 9332.253 - 9,332 in manuscript
+apc_muts_estimated$mle |> mean() # 20934.64 - 20935 in manuscript
 
 # Expected number of cells with double mutations:
 apc_muts_estimated = apc_single_snv |>
@@ -195,9 +196,9 @@ double_apc_ncells$ncells_mut |> mean()
 double_apc_ncells$ncells_mut |> max()
 
 double_apc_ncells_60 = double_apc_ncells  |> filter(age == 60)
-double_apc_ncells_60$ncells_mut |> min()
-double_apc_ncells_60$ncells_mut |> mean()
-double_apc_ncells_60$ncells_mut |> max()
+double_apc_ncells_60$ncells_mut |> min() # 0.833 Manuscript: 0.8
+double_apc_ncells_60$ncells_mut |> mean() # 2.074525 Manuscript: 2.07
+double_apc_ncells_60$ncells_mut |> max() # 3.956599 Manuscript: 3.96
 
 KRAS_single_snv = expected_rates_normal |>
   inner_join(KRAS_single_snv_muts, by = "mut_type", relationship = "many-to-many") |>
@@ -221,7 +222,7 @@ double_apc_kras = double_apc_ncells |>
          cilow = cilow * KRAS_single_snv$cilow,
          cihigh = cihigh * KRAS_single_snv$cihigh)
 
-# Manuscript number
+# Manuscript number across 1-million individuals (average age of the cohort)
 mean(double_apc_kras$mle * ncells) * 1e6
 
 # manuscript: number of 60-year olds with 2x APC and KRAS mutation: 1.03 per million individuals
@@ -230,7 +231,7 @@ risk_double_apc_kras = double_apc_kras |>
   mutate(mle = mle * ncells) |>
   summarize(mle = mean(mle)) |>
   as.numeric()
-risk_double_apc_kras * 1e6
+risk_double_apc_kras * 1e6 # 1.033262 Manuscript: 1.03
 
 # Plot the driver mutation rates
 plot_driver_muts = function(driver_rates, y_axis = "INSERT TITLE") {

@@ -158,7 +158,7 @@ min(vafs)
 mean(vafs)
 
 supplementary_note_plot_colon = create_vaf_overview(WT_muts_meta, c("OO82", "patient50"))
-ggsave("manuscript/Supplementary_notes/Supplementary_Note_X/figure_colon.png", supplementary_note_plot_colon, width = 10, height = 10)
+ggsave("manuscript/Supplementary_notes/Supplementary_Note_1/figure_colon.png", supplementary_note_plot_colon, width = 10, height = 10)
 
 
 ### POLE - POLD1 study
@@ -225,12 +225,20 @@ for (i in unique(metadata$category)) {
 }
 
 list_plots = lapply(list_results, \(x) x[["plot"]])
-ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_I/", tissue, "_coverage_var_correction.png"),
+ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_1/", tissue, "_coverage_var_correction.png"),
        patchwork::wrap_plots(list_plots), width = 12, height = 7)
 
 # filter data for minimal coverage threshold:
 cell_muts_filtered = cell_muts |>
   filter(sampleID %in% unique(metadata_filtered$sampleID))
+
+# get numbers of the filtered mutations
+nmuts = nrow(cell_muts)
+nmuts_filtered = nrow(cell_muts_filtered)
+nmuts ; nmuts_filtered ; nmuts_filtered / nmuts
+n_samples = n_distinct(cell_muts$sampleID)
+n_samples_filtered = n_distinct(cell_muts_filtered$sampleID)
+n_samples ; n_samples_filtered ; n_samples - n_samples_filtered
 
 # save data
 fwrite(cell_muts_filtered, file = paste0("processed_data/", tissue, "/", tissue, "_cell_muts.tsv.gz"))

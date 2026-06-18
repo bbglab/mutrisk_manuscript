@@ -11,8 +11,6 @@ metadata = lapply(md_files, fread) |>
   dplyr::select(any_of(c("tissue", "sampleID", "category", "age", "donor"))) |>
   dplyr::distinct()
 
-
-
 sig_contri_files = list.files("processed_data/", recursive = TRUE,
                                      pattern = "signature_contributions",
                                      full.names = TRUE)
@@ -73,8 +71,6 @@ mean_signatures_ordered = mean_signatures |>
 
 colors = setNames(ggsci::pal_igv()(n_distinct(mean_signatures_ordered$signature)),
                   unique(mean_signatures_ordered$signature))
-
-
 
 plot_blood = ggplot(mean_signatures_ordered |> filter(grepl("blood", name)),
                                 aes(x = name, y = contribution, fill = signature)) +
