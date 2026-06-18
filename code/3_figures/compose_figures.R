@@ -132,24 +132,20 @@ ggsave("manuscript/Figure_4/figure_4.pdf", figure_4, width = 18, height = 11)
 # figure_4ae = (panels_ae$A + panels_ae$B) / (panels_ae$C + panels_ae$D) / panels_ae$E
 # ggsave("manuscript/Figure_4/figure_4_AE.png", figure_4ae, width = 14, height = 16, dpi = 300)
 
-##### Figure 5
-figure_5A = readRDS("manuscript/figure_panels/figure_5/figure_5A.rds") |> prep_plot("A", all_margin = 3)
-figure_5B = readRDS("manuscript/figure_panels/figure_5/figure_5B.rds")
-figure_5C = readRDS("manuscript/figure_panels/figure_5/figure_5C.rds")
-figure_5D = readRDS("manuscript/figure_panels/figure_5/figure_5D.rds")
+##### Figure 6
+figure_6A = readRDS("manuscript/figure_panels/figure_6/figure_6A.rds") |> prep_plot("A", all_margin = 3)
+figure_6B = readRDS("manuscript/figure_panels/figure_6/figure_6B.rds")
+figure_6C = readRDS("manuscript/figure_panels/figure_6/figure_6C.rds")
+figure_6D = readRDS("manuscript/figure_panels/figure_6/figure_6D.rds")
 
 # save final completed plot
 figure_5 = figure_5A / figure_5B / figure_5C / figure_5D
-ggsave("manuscript/Figure_5/Figure_5.pdf", width = 13, height = 15)
-ggsave("manuscript/Figure_5/Figure_5.png", width = 13, height = 15)
+ggsave("manuscript/Figure_6/Figure_6.pdf", width = 13, height = 15)
+ggsave("manuscript/Figure_6/Figure_6.png", width = 13, height = 15)
 
 # Figure S6
 figure_S6A = readRDS("manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds") |> prep_plot("A")
 figure_S6B = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6B.rds") |> prep_plot("B")
 figure_S6C = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6C.rds") |> prep_plot("C")
 figure_S6 = (figure_S6A | figure_S6B) / figure_S6C
-<<<<<<< Updated upstream
-ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.svg", figure_S6, width = 14, height = 12)
-=======
 ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.png", figure_S6, width = 14, height = 12)
->>>>>>> Stashed changes
