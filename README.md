@@ -24,12 +24,7 @@ install.packages("renv")
 renv::restore()
 ```
 
-<<<<<<< HEAD
 Install MuSical in an environment "python37_musical" using conda or mamba:
-=======
-
-Install MuSical in an environment "python37_musical" using conda or mamba: 
->>>>>>> be3469641a960037a30b4995a80720c4586a33aa
 
 ``` bash
 
