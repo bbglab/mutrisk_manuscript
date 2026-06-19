@@ -132,6 +132,25 @@ ggsave("manuscript/Figure_4/figure_4.pdf", figure_4, width = 18, height = 11)
 # figure_4ae = (panels_ae$A + panels_ae$B) / (panels_ae$C + panels_ae$D) / panels_ae$E
 # ggsave("manuscript/Figure_4/figure_4_AE.png", figure_4ae, width = 14, height = 16, dpi = 300)
 
+##### Figure 5: APC/KRAS progression
+mg <- 5
+
+figure_5A <- readRDS("manuscript/figure_panels/figure_5/figure_5A.rds") |> prep_plot("A", all_margin = mg)
+figure_5B <- readRDS("manuscript/figure_panels/figure_5/figure_5B.rds") |> prep_plot("B", all_margin = mg)
+figure_5C <- readRDS("manuscript/figure_panels/figure_5/figure_5C.rds") |> prep_plot("C", all_margin = mg)
+figure_5D <- readRDS("manuscript/figure_panels/figure_5/figure_5D.rds") |> prep_plot("D", all_margin = mg)
+
+figure_5 <- cowplot::plot_grid(
+  figure_5A, figure_5B,
+  figure_5C, figure_5D,
+  labels = NULL, ncol = 2, align = "hv"
+)
+
+dir.create("manuscript/Figure_5", showWarnings = FALSE, recursive = TRUE)
+ggsave("manuscript/Figure_5/figure_5.png", figure_5, width = 13, height = 10.5, dpi = 300, bg = "white")
+ggsave("manuscript/Figure_5/figure_5.pdf", figure_5, width = 13, height = 10.5)
+ggsave("manuscript/Figure_5/figure_5.svg", figure_5, width = 13, height = 10.5)
+
 ##### Figure 6
 figure_6A = readRDS("manuscript/figure_panels/figure_6/figure_6A.rds") |> prep_plot("A", all_margin = 3)
 figure_6B = readRDS("manuscript/figure_panels/figure_6/figure_6B.rds")
@@ -139,7 +158,7 @@ figure_6C = readRDS("manuscript/figure_panels/figure_6/figure_6C.rds")
 figure_6D = readRDS("manuscript/figure_panels/figure_6/figure_6D.rds")
 
 # save final completed plot
-figure_5 = figure_5A / figure_5B / figure_5C / figure_5D
+figure_6 = figure_6A / figure_6B / figure_6C / figure_6D
 ggsave("manuscript/Figure_6/Figure_6.pdf", width = 13, height = 15)
 ggsave("manuscript/Figure_6/Figure_6.png", width = 13, height = 15)
 
