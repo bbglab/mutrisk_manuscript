@@ -8,6 +8,9 @@ SUBS_CLASSES = c("C>A", "C>G", "C>T", "T>A", "T>C", "T>G")
 # Tissue colours used for facet strip backgrounds
 MIRROR_TISSUE_COLORS = c(colon = "#3ca951", lung = "#4269d0", blood = "#ff725c")
 
+## Subtitle for complete tumor type (e.g. COADREAD, LUAD, AML)
+FULL_CANCER_TYPE = c(COADREAD = "Colorectal Adenocarcinoma", LUSC = "Lung Squamous Cell Carcinoma", AML = "Acute Myeloid Leukemia")
+
 make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
                                   tissue_select, category_select = "normal") {
 
@@ -63,10 +66,76 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
       position = max(df_mirror$position, na.rm = TRUE),
       mrate    = ifelse(tissue_category == expected_strip, -mrate, mrate))
 
+  # ---- Hotspot annotations (G12, G13, G14) --------
+  # Both strips: text left of bar, horizontal arrow from text to bar top.
+  # Text is offset slightly below the bar tip to avoid clipping at the plot edge.
+  hotspot_positions <- c(12, 13, 14)
+  hotspot_labels    <- c("G12", "G13", "G14")
+  x_offset          <- 10
+  arrow_gap         <- 5
+  y_offset          <- 0.95  # multiply bar_top to pull text downward from edge
+
+  # total stacked bar height (sum, not max) for each hotspot
+  min_label_dist     <- 0.01    # minimum y distance from 0 to keep the label visible
+
+  top_data <- df_mirror |>
+    filter(tissue_category == intogen_strip, position %in% hotspot_positions) |>
+    group_by(position) |>
+    summarise(bar_top = sum(mrate), .groups = "drop") |>
+    mutate(
+      tissue_category = factor(intogen_strip, levels = category_levels),
+      label           = hotspot_labels[match(position, hotspot_positions)],
+      x_label         = position - x_offset,
+      x_arrow_start   = position - arrow_gap,
+      x_arrow_end     = position,
+      y_label         = ifelse(bar_top < min_label_dist, min_label_dist, bar_top * y_offset),
+      y_arrow         = bar_top
+    )
+
+  bottom_data <- df_mirror |>
+    filter(tissue_category == expected_strip, position %in% hotspot_positions) |>
+    group_by(position) |>
+    summarise(bar_top = sum(mrate), .groups = "drop") |>
+    mutate(
+      tissue_category = factor(expected_strip, levels = category_levels),
+      label           = hotspot_labels[match(position, hotspot_positions)],
+      x_label         = position - x_offset,
+      x_arrow_start   = position - arrow_gap,
+      x_arrow_end     = position,
+      y_label         = bar_top,
+      y_arrow         = bar_top
+    )
+
   ggplot(df_point, aes(x = position, y = mrate)) +
     geom_hline(yintercept = 0, color = "grey70", linewidth = 0.5) +
     geom_point(color = "white") +
     geom_col(data = df_mirror, aes(fill = type)) +
+    # Top strip: text left, horizontal arrow rightward
+    geom_text(data = top_data,
+              aes(x = x_label, y = y_label, label = label,
+                  tissue_category = tissue_category),
+              color = "black", size = 3, fontface = "plain", hjust = 0,
+              inherit.aes = FALSE) +
+    geom_segment(data = top_data,
+                 aes(x = x_arrow_start, y = y_label,
+                     xend = x_arrow_end, yend = bar_top,
+                     tissue_category = tissue_category),
+                 arrow = arrow(length = unit(0.04, "inches"), type = "closed"),
+                 color = "black", linewidth = 0.4,
+                 inherit.aes = FALSE) +
+    # Bottom strip: text left, horizontal arrow rightward
+    geom_text(data = bottom_data,
+              aes(x = x_label, y = y_label, label = label,
+                  tissue_category = tissue_category),
+              color = "black", size = 3, fontface = "plain", hjust = 0,
+              inherit.aes = FALSE) +
+    geom_segment(data = bottom_data,
+                 aes(x = x_arrow_start, y = y_label,
+                     xend = x_arrow_end, yend = bar_top,
+                     tissue_category = tissue_category),
+                 arrow = arrow(length = unit(0.04, "inches"), type = "closed"),
+                 color = "black", linewidth = 0.4,
+                 inherit.aes = FALSE) +
     facet_grid2(tissue_category ~ ., scales = "free",
                 strip = strip_themed(
                   background_y = elem_list_rect(
@@ -85,7 +154,7 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
           axis.text.y = element_text(margin = margin(r = 4)),
           strip.text.y = element_text(margin = margin(r = 4, l = 4))) +
     labs(y = NULL, x = "AA position",
-         title = "KRAS", subtitle = paste0(cancer_type, "/", tissue_select)) +
+         title = "KRAS", subtitle = paste0(FULL_CANCER_TYPE[cancer_type], "/", tissue_select)) +
     scale_y_continuous(expand = expansion(mult = c(0, 0)),
                        breaks = scales::breaks_extended(n = 3),
                        labels = abs)

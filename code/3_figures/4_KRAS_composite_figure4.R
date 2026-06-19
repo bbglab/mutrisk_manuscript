@@ -6,6 +6,7 @@
 # Run from the mutrisk_manuscript project root:
 #   Rscript code/3_figures/kras_composite_figure.R
 
+library(patchwork)
 library(ggh4x)
 source("code/0_functions/analysis_variables.R")
 
@@ -127,23 +128,30 @@ get_active_sigs = function(plot_data, min_prop = 0.01) {
   sig_totals |> filter(total / gt > min_prop) |> pull(signature) |> as.character()
 }
 
-# Only keep signatures that contribute > 1 % in at least one panel
-g12_sigs_present = unique(c(
+# Only keep signatures that contribute > 1 % in at least one panel, split by tissue group
+# Colon + Lung (solid tissues)
+g12_sigs_colon_lung = unique(c(
   get_active_sigs(bars_colon$data),
   get_active_sigs(bars_lung_ns$data),
   get_active_sigs(bars_lung_ex$data),
-  get_active_sigs(bars_lung_sm$data),
-  get_active_sigs(bars_blood$data)
+  get_active_sigs(bars_lung_sm$data)
 ))
-active_colors = g12_colors[names(g12_colors) %in% g12_sigs_present]
+# Blood (hematopoietic)
+g12_sigs_blood = get_active_sigs(bars_blood$data)
 
-# Enforce identical fill scale on all panels
-shared_fill = scale_fill_manual(values = active_colors, drop = FALSE)
-bars_colon   = bars_colon   + shared_fill
-bars_lung_ns = bars_lung_ns + shared_fill
-bars_lung_ex = bars_lung_ex + shared_fill
-bars_lung_sm = bars_lung_sm + shared_fill
-bars_blood   = bars_blood   + shared_fill
+# Colors for each group
+colon_lung_colors = g12_colors[names(g12_colors) %in% g12_sigs_colon_lung]
+blood_colors = g12_colors[names(g12_colors) %in% g12_sigs_blood]
+
+# Enforce fill scales per tissue group
+colon_lung_fill = scale_fill_manual(values = colon_lung_colors, drop = FALSE)
+blood_fill = scale_fill_manual(values = blood_colors, drop = FALSE)
+
+bars_colon   = bars_colon   + colon_lung_fill
+bars_lung_ns = bars_lung_ns + colon_lung_fill
+bars_lung_ex = bars_lung_ex + colon_lung_fill
+bars_lung_sm = bars_lung_sm + colon_lung_fill
+bars_blood   = bars_blood   + blood_fill
 
 # Layout styling adjustments
 bars_colon   = bars_colon   + theme(axis.title.x = element_blank(),
@@ -183,26 +191,49 @@ bars_lung_ex = bars_lung_ex + labs(subtitle = paste0("lung - ex-smoker (", get_g
 bars_lung_sm = bars_lung_sm + labs(subtitle = paste0("lung - smoker (", get_g12_total(bars_lung_sm), " cells)"))
 bars_blood   = bars_blood   + labs(subtitle = paste0("blood - normal (", get_g12_total(bars_blood), " cells)"))
 
-# ---- Combine panels with shared y-axis + standalone legend ----
-# Stack the 5 panels vertically
-middle_stack = wrap_plots(bars_colon, bars_lung_ns, bars_lung_ex,
-                           bars_lung_sm, bars_blood, ncol = 1)
+# ---- Combine panels with per-group legends aligned to their plots ----
 
-# Standalone legend plot using the same color scale
-p_legend = ggplot(data.frame(sig = names(active_colors), y = 1),
-                   aes(x = sig, y = y, fill = sig)) +
-  geom_col(show.legend = TRUE) +
-  scale_fill_manual(values = active_colors, name = "Signature") +
-  guides(fill = guide_legend(ncol = 1)) +
-  theme_void()
-legend_grob = cowplot::get_legend(p_legend)
+# Colon + Lung: 4 bar plots with legend centered to their right
+bars_colon_lung = wrap_plots(bars_colon, bars_lung_ns, bars_lung_ex,
+                              bars_lung_sm, ncol = 1)
 
 # Shared y-axis label
-y_grob = grid::textGrob("Number of cells with\nKRAS mutation",
-                         rot = 90, gp = grid::gpar(fontsize = 11))
+bar_y_label = grid::textGrob("Number of cells with KRAS G12 mutation",
+                              rot = 90, gp = grid::gpar(fontsize = 10))
 
-middle_column = wrap_plots(y_grob, middle_stack, legend_grob,
-                            ncol = 3, widths = c(0.04, 1, 0.2))
+# Colon/Lung legend
+p_legend_colon_lung = ggplot(data.frame(sig = names(colon_lung_colors), y = 1),
+                   aes(x = sig, y = y, fill = sig)) +
+  geom_col(show.legend = TRUE) +
+  scale_fill_manual(values = colon_lung_colors, name = "Signatures\n(solid tissues)") +
+  guides(fill = guide_legend(ncol = 1)) +
+  theme_void()
+legend_grob_colon_lung = cowplot::get_legend(p_legend_colon_lung)
+
+# Colon+lung panel: 4 bar plots | legend (centered)
+colon_lung_block = wrap_plots(bars_colon_lung, legend_grob_colon_lung,
+                               ncol = 2, widths = c(1, 0.2))
+
+# Blood panel: bar plot | legend
+# Blood legend
+p_legend_blood = ggplot(data.frame(sig = names(blood_colors), y = 1),
+                   aes(x = sig, y = y, fill = sig)) +
+  geom_col(show.legend = TRUE) +
+  scale_fill_manual(values = blood_colors, name = "Signatures\n(blood)") +
+  guides(fill = guide_legend(ncol = 1)) +
+  theme_void()
+legend_grob_blood = cowplot::get_legend(p_legend_blood)
+
+blood_block = wrap_plots(bars_blood, legend_grob_blood,
+                          ncol = 2, widths = c(1, 0.2))
+
+# Stack both blocks vertically
+bars_stacked = wrap_plots(colon_lung_block, blood_block, ncol = 1,
+                            heights = c(4, 1))
+
+# Shared y-axis label | stacked bar blocks
+middle_column = wrap_plots(bar_y_label, bars_stacked,
+                            ncol = 2, widths = c(0.04, 1))
 
 
 # ---- 4. Bottom row — KRAS G12 age vs cells scatter ----

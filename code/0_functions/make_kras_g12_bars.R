@@ -28,13 +28,14 @@ make_kras_g12_bars = function(boostdm, sig_donor_rates, metadata, ratios,
     inner_join(site_freqs, by = "mut_type", relationship = "many-to-many") |>
     filter(!is.na(signature))
 
-  # ---- 5. Scale to expected_rates total, keep signature proportions ----
+  # ---- 5. Use expected_rates total, compute global signature proportions ----
   ratio_val = ratios |>
     filter(tissue == tissue_select, category == category_select,
            gene_name == "KRAS") |>
     pull(ratio)
   if (length(ratio_val) == 0) ratio_val = 1
 
+  # Total expected cells per mut_type (avg donor)
   exp_mut = expected_rates |>
     filter(tissue == tissue_select, category == category_select) |>
     left_join(select(metadata, sampleID, donor, category),
@@ -44,21 +45,24 @@ make_kras_g12_bars = function(boostdm, sig_donor_rates, metadata, ratios,
     group_by(mut_type) |>
     summarize(exp_mle = mean(mle), .groups = "drop")
 
-  sig_rates = sig_rates |>
-    group_by(donor, mut_type) |>
-    mutate(sig_frac = mle / sum(mle)) |>
+  # Global signature proportions (averaged across donors)
+  sig_props = sig_rates |>
+    group_by(mut_type, signature) |>
+    summarize(sig_mle = mean(mle), .groups = "drop") |>
+    group_by(mut_type) |>
+    mutate(sig_prop = sig_mle / sum(sig_mle)) |>
     ungroup() |>
-    left_join(exp_mut, by = "mut_type") |>
-    mutate(mle = exp_mle * sig_frac * N * ncells * ratio_val) |>
-    select(-sig_frac, -exp_mle) |>
-    left_join(distinct(kras_map, mut_type, aachange), by = "mut_type")
+    select(mut_type, signature, sig_prop)
 
-  # ---- 6. Aggregate: mean across donors, group by aachange + signature ----
-  df = sig_rates |>
-    group_by(aachange, donor, signature) |>
-    summarize(mle = sum(mle), .groups = "drop") |>
+  # Combine: total cells * signature proportion
+  df = exp_mut |>
+    left_join(site_freqs, by = "mut_type") |>
+    inner_join(sig_props, by = "mut_type", relationship = "many-to-many") |>
+    mutate(mle = exp_mle * sig_prop * N * ncells * ratio_val) |>
+    select(-exp_mle, -sig_prop, -N) |>
+    left_join(distinct(kras_map, mut_type, aachange), by = "mut_type") |>
     group_by(aachange, signature) |>
-    summarize(mle = mean(mle), .groups = "drop") |>
+    summarize(mle = sum(mle), .groups = "drop") |>
     mutate(signature = factor(signature))
 
   # ---- 7. Trinucleotide-context label per aachange ----
