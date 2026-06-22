@@ -75,9 +75,6 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
   arrow_gap         <- 5
   y_offset          <- 0.95  # multiply bar_top to pull text downward from edge
 
-  # total stacked bar height (sum, not max) for each hotspot
-  min_label_dist     <- 0.01    # minimum y distance from 0 to keep the label visible
-
   top_data <- df_mirror |>
     filter(tissue_category == intogen_strip, position %in% hotspot_positions) |>
     group_by(position) |>
@@ -88,7 +85,9 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
       x_label         = position - x_offset,
       x_arrow_start   = position - arrow_gap,
       x_arrow_end     = position,
-      y_label         = ifelse(bar_top < min_label_dist, min_label_dist, bar_top * y_offset),
+      y_label         = ifelse(
+                          position == 14 & bar_top < 0.08, bar_top + 2, 
+                          ifelse(position == 14, bar_top + (bar_top * 1.8), bar_top * y_offset)),
       y_arrow         = bar_top
     )
 
@@ -99,10 +98,11 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
     mutate(
       tissue_category = factor(expected_strip, levels = category_levels),
       label           = hotspot_labels[match(position, hotspot_positions)],
+      # G12: pull label higher (closer to zero) and horizontally closer to bar
       x_label         = position - x_offset,
       x_arrow_start   = position - arrow_gap,
       x_arrow_end     = position,
-      y_label         = bar_top,
+      y_label         = ifelse(position == 12, bar_top * 1.5, bar_top),
       y_arrow         = bar_top
     )
 

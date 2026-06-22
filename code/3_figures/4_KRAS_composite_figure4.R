@@ -67,6 +67,9 @@ setnames(sig_lung,  c("name", "value"), c("mut_type", "mle"))
 setnames(sig_blood, c("name", "value"), c("mut_type", "mle"))
 
 # Generate panel plots
+# only use boostdm_class = TRUE
+boostdm = lapply(boostdm, function(dt) dt |> dplyr::filter(boostDM_class == TRUE))
+
 bars_colon = make_kras_g12_bars(boostdm, sig_colon, metadata, ratios,
                                  expected_rates, "colon", "normal")
 bars_lung_ns = make_kras_g12_bars(boostdm, sig_lung, metadata, ratios,
@@ -198,7 +201,7 @@ bars_colon_lung = wrap_plots(bars_colon, bars_lung_ns, bars_lung_ex,
                               bars_lung_sm, ncol = 1)
 
 # Shared y-axis label
-bar_y_label = grid::textGrob("Number of cells with KRAS G12 mutation",
+bar_y_label = grid::textGrob("Number of cells with KRAS G12 driver mutations",
                               rot = 90, gp = grid::gpar(fontsize = 10))
 
 # Colon/Lung legend
