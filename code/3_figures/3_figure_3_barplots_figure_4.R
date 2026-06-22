@@ -13,9 +13,8 @@ metadata = lapply(metadata_files, \(x) fread(x)[,c("sampleID", "category", "age"
   rbindlist(idcol = "tissue")
 
 # Load gene_of_interest boostdm
-boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "lung|colon|CH", full.names = TRUE)
+boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "[lung|colon|CH]_boostDM_cancer.txt.gz", full.names = TRUE)
 names(boostdm_files) = c("blood", "colon", "lung")
-# boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(driver == TRUE, "driver", "non-driver")))# change names for overview
 boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(boostDM_class == TRUE, "driver", "non-driver")))# change names for overview
 
 
@@ -49,18 +48,20 @@ saveRDS(F1B, "manuscript/figure_panels/figure_1/figure_1B.rds")
 
 # Manuscript numbers
 # calculate number of CpG vs non-CpG rate
-rates_CpG = expected_rates |>
-  left_join(triplet_match_substmodel) |>
-  left_join(metadata) |>
-  filter(tissue == "colon" & category == "normal") |>
-  mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
-  group_by(sampleID, age, cpg, trinuc) |>
-  summarize(sum_rate = sum(mle), .groups = "drop_last") |>
-  summarize(mean_rate = mean(sum_rate)) |>
-  pivot_wider(names_from = cpg, values_from = mean_rate) |>
-  mutate(fold_change = CpG / `non-CpG`) |>
-  arrange(fold_change) |>
-  as.data.table()
+# rates_CpG = expected_rates |>
+#   left_join(triplet_match_substmodel) |>
+#   left_join(metadata) |>
+#   filter(tissue == "colon" & category == "normal") |>
+#   mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
+#   group_by(sampleID, age, cpg, trinuc) |>
+#   summarize(sum_rate = sum(mle), .groups = "drop_last") |>
+#   summarize(mean_rate = mean(sum_rate)) |>
+#   pivot_wider(names_from = cpg, values_from = mean_rate) |>
+# Error: unexpected symbol in:
+#  mutate(fold_change = CpG / `non-CpG`) |>
+#   mutate(fold_change = CpG / `non-CpG`) |>
+#   arrange(fold_change) |>
+#   as.data.table()
 # max CpG / non-CpG rate: 30, lowest is 6
 
 # print mutation rate differences CpG vs non-CpG

@@ -264,7 +264,14 @@ analyze_probability = function(gene_counts, analysis_name, groupby = "donor",
     ncells_ci = tissue_ncells_ci[tissue_ncells_ci$tissue == tissue,]
     ncells_ci_wide = tissue_ncells_ci_wide[tissue_ncells$tissue == tissue,]
 
-    result_plot_list[[tissue]] = result_plot # save for later analysis
+    result_plot_df = result_plot |>
+      ungroup() |>
+      mutate(n_mutated_cells = value * ncells,
+             ncells = ncells,
+             x = rep(1:binsize, n_groups(result_plot)) / 1e4,
+             x = x/max(x)) # normalize to 1
+
+    result_plot_list[[tissue]] = result_plot_df # save for later analysis
 
     ##### get the mutated probability
     gene_site_counts = gene_counts

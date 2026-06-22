@@ -98,7 +98,7 @@ df_point = df_mirror |>
          mrate = ifelse(tissue_category == "Expected mutrate\nblood", 0-mrate, mrate)) |>
   ungroup()
 
-F5A = ggplot(df_point, aes(x = position, y = mrate)) +
+F6A = ggplot(df_point, aes(x = position, y = mrate)) +
   geom_point(color = "white") +
   geom_col(data = df_mirror, aes(fill = type)) +
   geom_text(data = data.frame(tissue_category = factor("UKBiobank CH"), position = 50, mrate = 1500, label = "DNMT3A"),
@@ -110,12 +110,12 @@ F5A = ggplot(df_point, aes(x = position, y = mrate)) +
   theme(legend.position = "none", panel.spacing.y = unit(0, "mm")) +
   labs(y = "Number expected/\nobserved muts",  x = "AA position") +
   scale_y_continuous(expand=expansion(mult=c(0,0)), breaks = scales::breaks_extended(n = 3), labels = abs)
-F5A
+F6A
 
-saveRDS(F5A, "manuscript/figure_panels/figure_5/figure_5A.rds")
+saveRDS(F6A, "manuscript/figure_panels/figure_5/figure_6A.rds")
 
 
-#### Figure 5B-C-D
+#### Figure 6B-C-D
 
 # calculate expected number of mutated cells
 calc_exp_muts = function(expected_rates, mut_positions, metadata, ratios, ncells) {
