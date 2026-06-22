@@ -227,12 +227,13 @@ calc_exp_muts(expected_rates, DNMT3A_drivers, metadata= metadata, ratios = ratio
   summarize(across(c(mle, cilow, cihigh, age), \(x) mean(x)*13))
 
 # make the general figure:
-plots = c(DNMT3A_driver_plot, TET2_driver_plot, TP53_driver_plot)
-plots[[2]] = plots[[2]] + labs(title = "DNMT3A") + theme(plot.title = element_text(hjust = 0.5))
-plots[[4]] = plots[[4]] + labs(title = "TET2") + theme(plot.title = element_text(hjust = 0.5))
-plots[[6]] = plots[[6]] + labs(title = "TP53") + theme(plot.title = element_text(hjust = 0.5))
-F5B = wrap_plots(plots[c(2,4,6)], byrow = FALSE) |> prep_plot(label = "E")
-F5C = wrap_plots(plots[c(1,3,5)], byrow = FALSE) |> prep_plot(label = "F")
+plots = c(DNMT3A_R882H_hotspot_plots, DNMT3A_driver_plot, TET2_driver_plot, TP53_driver_plot)
+plots[[2]] = plots[[2]] + labs(title = "DNMT3A R882H") + theme(plot.title = element_text(hjust = 0.5))
+plots[[4]] = plots[[4]] + labs(title = "DNMT3A") + theme(plot.title = element_text(hjust = 0.5))
+plots[[6]] = plots[[6]] + labs(title = "TET2") + theme(plot.title = element_text(hjust = 0.5))
+plots[[8]] = plots[[8]] + labs(title = "TP53") + theme(plot.title = element_text(hjust = 0.5))
+F5B = wrap_plots(plots[c(2,4,6,8)], ncol = 4, byrow = FALSE) |> prep_plot(label = "B")
+F5C = wrap_plots(plots[c(1,3,5,7)], ncol = 4, byrow = FALSE) |> prep_plot(label = "C")
 
 # get all the driver mutations for the watson figure:
 watson_variants = c("R882C", "R729W", "R326C", "R320*", "R882H", "R736H",
@@ -290,13 +291,7 @@ for (i in 1:3) {
 
   UKB_plot_list[[gene]] = plt
 }
-F5D = wrap_plots(UKB_plot_list) |> prep_plot(label = "G")
 
-# save figures:
-saveRDS(F5A, "manuscript/figure_panels/figure_6/figure_6A.rds")
-saveRDS(F5B, "manuscript/figure_panels/figure_6/figure_6E.rds")
-saveRDS(F5C, "manuscript/figure_panels/figure_6/figure_6F.rds")
-saveRDS(F5D, "manuscript/figure_panels/figure_6/figure_6G.rds")
 
 # for supplementary figure 9b, add the ukbiobank data
 DNMT3A_age = fread("raw_data/UKBiobank/UKB_age_frequencies_DNMT3A.tsv")
@@ -330,8 +325,16 @@ figure_6D = DNMT3A_age_binned |>
   geom_pointpath() +
   theme_cowplot() +
   scale_y_continuous(labels = label_percent()) +
-  labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH")
-saveRDS(figure_6D, "manuscript/figure_panels/figure_6/figure_6D.rds")
+  labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH", subtitle = "DNMT3A R882H")
+
+UKB_plot_list = c(list("DNMT3A R882H hotspot" = figure_6D),  UKB_plot_list)
+F5D = wrap_plots(UKB_plot_list, ncol = 4) |> prep_plot(label = "D")
+
+# save figures:
+saveRDS(F5A, "manuscript/figure_panels/figure_6/figure_6A.rds")
+saveRDS(F5B, "manuscript/figure_panels/figure_6/figure_6B.rds")
+saveRDS(F5C, "manuscript/figure_panels/figure_6/figure_6C.rds")
+saveRDS(F5D, "manuscript/figure_panels/figure_6/figure_6D.rds")
 
 # Save
 figure_S9A = prep_plot(figure_S9A, "A")
