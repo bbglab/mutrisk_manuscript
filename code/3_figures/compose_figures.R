@@ -104,7 +104,7 @@ figure_3A = readRDS("manuscript/figure_panels/figure_3/figure_3A.rds") |> prep_p
 
 # Load Figure 1A if present, otherwise use an empty placeholder
 if (file.exists("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png")) {
-  figure_3B <- fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "A", all_margin = 0)
+figure_3B <- fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "B", all_margin = 4)
 } else {
   print("WARNING: Figure 3B_only_boostDM.png not found — using empty placeholder")
   figure_3B <- ggplot() + theme_void()
