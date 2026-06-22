@@ -38,7 +38,7 @@ make_kras_mirror_plot = function(intogen_data, boostdm, expected_rates, ratios,
                               tissue_name       = tissue_select,
                               category_select   = category_select,
                               cell_probabilities = FALSE,
-                              filter_age        = TRUE)
+                              filter_age        = FALSE)
 
   # merge_mutrisk_drivers already multiplies by ncells internally
   expected_strip = "Estimated\ncells"

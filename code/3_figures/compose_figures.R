@@ -5,6 +5,7 @@ source("code/0_functions/analysis_variables.R")
 
 # Figure 1:
 # load figure 1 graphic:
+print("Composing Figure1")
 mg = 7 # set margins
 
 # Load Figure 1A if present, otherwise use an empty placeholder
@@ -27,7 +28,11 @@ ggsave("manuscript/Figure_1/figure_1.png", figure_1, width = 16, height = 13)
 ggsave("manuscript/Figure_1/figure_1.pdf", figure_1, width = 16, height = 13)
 ggsave("manuscript/Figure_1/figure_1.svg", figure_1, width = 16, height = 13)
 
+print("Figure1 saved in manuscript/Figure_1")
+
 #### Figure 2
+
+print("Composing Figure 2")
 mg = 10 # set margins
 figure_2A = readRDS("manuscript/figure_panels/figure_2/figure_2A.rds") |> prep_plot(label = "A", all_margin = mg)
 
@@ -46,8 +51,12 @@ figure_2_middle =  figure_2B + figure_2C
 figure_2 = figure_2A / figure_2_middle / figure_2D + plot_layout(heights = c(0.8, 1,1))
 ggsave("manuscript/Figure_2/figure_2.png", figure_2, width = 12, height = 12)
 ggsave("manuscript/Figure_2/figure_2.pdf", figure_2, width = 12, height = 12)
+ggsave("manuscript/Figure_2/figure_2.svg", figure_2, width = 12, height = 12)
+
+print("Figure2 saved in manuscript/Figure_2/")
 
 #### Figure 3
+print("Composing Figure 3")
 mg = 8
 
 # Load TP53 site counts for table under figure 3B
@@ -92,7 +101,15 @@ table_theme = ttheme_default(
 tp53_table = tableGrob(tp53_table_data, rows = NULL, theme = table_theme)
 
 figure_3A = readRDS("manuscript/figure_panels/figure_3/figure_3A.rds") |> prep_plot(label = "A", all_margin = mg)
-figure_3B = fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "B", all_margin = mg)
+
+# Load Figure 1A if present, otherwise use an empty placeholder
+if (file.exists("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png")) {
+  figure_3B <- fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "A", all_margin = 0)
+} else {
+  print("WARNING: Figure 3B_only_boostDM.png not found — using empty placeholder")
+  figure_3B <- ggplot() + theme_void()
+}
+
 figure_3B_column = (figure_3B / wrap_elements(tp53_table)) + plot_layout(heights = c(2, 1))
 figure_3_top = figure_3A + figure_3B_column + plot_layout(widths = c(2.5, 1))
 
@@ -104,8 +121,13 @@ figure_3 = figure_3_top / figure_3_bottom + plot_layout(heights = c(1.6, 1))
 
 ggsave("manuscript/Figure_3/figure_3.png", figure_3, width = 16, height = 11)
 ggsave("manuscript/Figure_3/figure_3.pdf", figure_3, width = 16, height = 11)
+ggsave("manuscript/Figure_3/figure_3.svg", figure_3, width = 16, height = 11)
+
+print("Figure3 saved in manuscript/Figure_3/")
 
 ##### Figure 4
+
+print("Composing Figure 4")
 mg = 5
 
 # perform these operations later in the compose-figures part:
@@ -131,8 +153,13 @@ figure_4 = figure_4_top / figure_4_middle / figure_4_bottom# + plot_layout(heigh
 
 ggsave("manuscript/Figure_4/figure_4.png", figure_4, width = 18, height = 11)
 ggsave("manuscript/Figure_4/figure_4.pdf", figure_4, width = 18, height = 11)
+ggsave("manuscript/Figure_4/figure_4.pdf", figure_4, width = 18, height = 11)
+
+print("Figure4 saved in manuscript/Figure_4/")
 
 ##### Figure 5: APC/KRAS progression
+
+print("Composing Figure 5")
 mg <- 5
 
 figure_5A <- readRDS("manuscript/figure_panels/figure_5/figure_5A.rds") |> prep_plot("A", all_margin = mg)
@@ -151,7 +178,11 @@ ggsave("manuscript/Figure_5/figure_5.png", figure_5, width = 13, height = 10.5, 
 ggsave("manuscript/Figure_5/figure_5.pdf", figure_5, width = 13, height = 10.5)
 ggsave("manuscript/Figure_5/figure_5.svg", figure_5, width = 13, height = 10.5)
 
+print("Figure4 saved in manuscript/Figure_5/")
+
 ##### Figure 6
+
+print("Composing Figure 6")
 figure_6A = readRDS("manuscript/figure_panels/figure_6/figure_6A.rds") |> prep_plot("A", all_margin = 3)
 # new row under panel A: Figure S8 panels A/B + binned Figure S9B
 figure_6B = readRDS("manuscript/figure_panels/figure_6/figure_6B.rds")
@@ -162,9 +193,16 @@ figure_6D = readRDS("manuscript/figure_panels/figure_6/figure_6D.rds")
 figure_6 = figure_6A / figure_6B / figure_6C / figure_6D
 ggsave("manuscript/Figure_6/Figure_6.pdf", figure_6, width = 16, height = 19)
 ggsave("manuscript/Figure_6/Figure_6.png", figure_6, width = 16, height = 19)
+ggsave("manuscript/Figure_6/Figure_6.svg", figure_6, width = 16, height = 19)
+print("Figure6 saved in manuscript/Figure_6/")
+
 # Figure S6
+
+print("Composing Figure S6")
 figure_S6A = readRDS("manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds") |> prep_plot("A")
 figure_S6B = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6B.rds") |> prep_plot("B")
 figure_S6C = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6C.rds") |> prep_plot("C")
 figure_S6 = (figure_S6A | figure_S6B) / figure_S6C
 ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.png", figure_S6, width = 14, height = 12)
+
+print("Figure4 saved in manuscript/Supplementary_Figures/Figure_S6/")
