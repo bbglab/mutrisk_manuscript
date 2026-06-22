@@ -201,3 +201,53 @@ ggsave("manuscript/Supplementary_Figures/Figure_S7/Figure_S7.png", treemaps, wid
 ggsave("manuscript/Supplementary_Figures/Figure_S7/Figure_S7.pdf", treemaps, width = 11, height = 6, bg = "white")
 treemaps
 
+# ============================================================
+# Panel A: Polyp/adenoma incidence (moved from Figure 4)
+# ============================================================
+# Load polyp incidence data
+ad_incidence = fread("raw_data/polyp_incidence/Adenomas_by10_intestines.csv")
+age_min_column = rep(c(40, 50, 60, 70, 80), 2)
+age_max_column = rep(c(50, 60, 70, 80, 90), 2)
+
+# 135 CNADs sequenced, of which 73 have APC mutation
+# 54% of adenomas have APC mutation
+ad_incidence = ad_incidence |>
+  filter(!Sex %in% c("Males Total", "Females Total")) |>
+  mutate(min_age = age_min_column,
+         max_age = age_max_column,
+         age = (min_age + max_age) / 2,
+         fraction_adenoma_apc = (`All sizes` * 0.54) / 10)
+
+# take the mean across samples
+ad_incidence_mean = ad_incidence |>
+  group_by(age) |>
+  summarize(fraction_adenoma_apc = mean(fraction_adenoma_apc), .groups = "drop")
+
+# Create Panel A: Polyp incidence
+pA_adenoma = ad_incidence_mean |>
+  ggplot(aes(x = age, y = fraction_adenoma_apc * 100)) +  # Convert to per 100
+  geom_line(color = "#4a4a4a", linewidth = 1.2) +
+  geom_point(color = "#4a4a4a", size = 2) +
+  scale_y_continuous(labels = scales::label_number(), limits = c(0, 70)) +
+  scale_x_continuous(limits = c(20, 85)) +
+  theme_cowplot() +
+  theme(
+    axis.title.y = element_text(color = "#4a4a4a", size = 10),
+    axis.text.y = element_text(color = "#4a4a4a", size = 9),
+    axis.title.x = element_text(size = 10),
+    plot.margin = margin(10, 10, 10, 10)
+  ) +
+  labs(y = "Polyp incidence per 100 people", x = "Age (years)")
+
+# Add panel label
+pA_adenoma = pA_adenoma + theme(plot.tag.position = c(-0.08, 1.03)) + labs(tag = "A")
+
+# Save Panel A separately
+output_dir_s7 = "manuscript/Supplementary_Figures/Figure_S7"
+dir.create(output_dir_s7, showWarnings = FALSE, recursive = TRUE)
+
+ggsave(file.path(output_dir_s7, "Figure_S7A_adenoma.png"), pA_adenoma, width = 6, height = 4, dpi = 300, bg = "white")
+ggsave(file.path(output_dir_s7, "Figure_S7A_adenoma.pdf"), pA_adenoma, width = 6, height = 4, bg = "white")
+saveRDS(pA_adenoma, file.path(output_dir_s7, "Figure_S7A.rds"))
+
+cat("Panel A (adenoma incidence) saved to", file.path(output_dir_s7, "Figure_S7A_adenoma.png"), "\n")
