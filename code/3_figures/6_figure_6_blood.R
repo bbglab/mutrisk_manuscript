@@ -159,6 +159,10 @@ figure_S8 = mapply(DNMT3A_R882H_hotspot_plots[2:1], c("A", "B"), FUN = prep_plot
 ggsave("manuscript/Supplementary_Figures/Figure_S8/Figure_S8.png", figure_S8, width = 10, height = 5)
 ggsave("manuscript/Supplementary_Figures/Figure_S8/Figure_S8.pdf", figure_S8, width = 10, height = 5)
 
+# export Figure S8 panels A (100,000 HSCs) and B (1.3 million HSCs) as Figure 6 row panels B and C
+saveRDS(DNMT3A_R882H_hotspot_plots$mid_estimate, "manuscript/figure_panels/figure_6/figure_6B.rds")
+saveRDS(DNMT3A_R882H_hotspot_plots$high_estimate, "manuscript/figure_panels/figure_6/figure_6C.rds")
+
 
 # calculate the time for a clone to be present at a VAF of 0.02:
 # assuming 100K HSCs
@@ -227,8 +231,8 @@ plots = c(DNMT3A_driver_plot, TET2_driver_plot, TP53_driver_plot)
 plots[[2]] = plots[[2]] + labs(title = "DNMT3A") + theme(plot.title = element_text(hjust = 0.5))
 plots[[4]] = plots[[4]] + labs(title = "TET2") + theme(plot.title = element_text(hjust = 0.5))
 plots[[6]] = plots[[6]] + labs(title = "TP53") + theme(plot.title = element_text(hjust = 0.5))
-F5B = wrap_plots(plots[c(2,4,6)], byrow = FALSE) |> prep_plot(label = "B")
-F5C = wrap_plots(plots[c(1,3,5)], byrow = FALSE) |> prep_plot(label = "C")
+F5B = wrap_plots(plots[c(2,4,6)], byrow = FALSE) |> prep_plot(label = "E")
+F5C = wrap_plots(plots[c(1,3,5)], byrow = FALSE) |> prep_plot(label = "F")
 
 # get all the driver mutations for the watson figure:
 watson_variants = c("R882C", "R729W", "R326C", "R320*", "R882H", "R736H",
@@ -286,13 +290,13 @@ for (i in 1:3) {
 
   UKB_plot_list[[gene]] = plt
 }
-F5D = wrap_plots(UKB_plot_list) |> prep_plot(label = "D")
+F5D = wrap_plots(UKB_plot_list) |> prep_plot(label = "G")
 
 # save figures:
 saveRDS(F5A, "manuscript/figure_panels/figure_6/figure_6A.rds")
-saveRDS(F5B, "manuscript/figure_panels/figure_6/figure_6B.rds")
-saveRDS(F5C, "manuscript/figure_panels/figure_6/figure_6C.rds")
-saveRDS(F5D, "manuscript/figure_panels/figure_6/figure_6D.rds")
+saveRDS(F5B, "manuscript/figure_panels/figure_6/figure_6E.rds")
+saveRDS(F5C, "manuscript/figure_panels/figure_6/figure_6F.rds")
+saveRDS(F5D, "manuscript/figure_panels/figure_6/figure_6G.rds")
 
 # for supplementary figure 9b, add the ukbiobank data
 DNMT3A_age = fread("raw_data/UKBiobank/UKB_age_frequencies_DNMT3A.tsv")
@@ -312,6 +316,22 @@ figure_S9B = DNMT3A_age_fraction |>
   theme_cowplot() +
   scale_y_continuous(labels = label_percent()) +
   labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH")
+
+# more binned version of Figure S9B (10-year age bins) as Figure 6 row panel D
+DNMT3A_age_binned = DNMT3A_age |>
+  mutate(age_bin = cut(Age, breaks = seq(0, 100, by = 10), right = FALSE)) |>
+  group_by(age_bin) |>
+  summarize(`R/H` = sum(`R/H`), Individuals = sum(Individuals), Age = mean(Age), .groups = "drop") |>
+  filter(Individuals >= 2000) |>
+  mutate(fraction_DNMT3A_R882H = `R/H` / Individuals)
+
+figure_6D = DNMT3A_age_binned |>
+  ggplot(aes(x = Age, y = fraction_DNMT3A_R882H)) +
+  geom_pointpath() +
+  theme_cowplot() +
+  scale_y_continuous(labels = label_percent()) +
+  labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH")
+saveRDS(figure_6D, "manuscript/figure_panels/figure_6/figure_6D.rds")
 
 # Save
 figure_S9A = prep_plot(figure_S9A, "A")

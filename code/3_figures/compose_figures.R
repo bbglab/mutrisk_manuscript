@@ -153,15 +153,19 @@ ggsave("manuscript/Figure_5/figure_5.svg", figure_5, width = 13, height = 10.5)
 
 ##### Figure 6
 figure_6A = readRDS("manuscript/figure_panels/figure_6/figure_6A.rds") |> prep_plot("A", all_margin = 3)
-figure_6B = readRDS("manuscript/figure_panels/figure_6/figure_6B.rds")
-figure_6C = readRDS("manuscript/figure_panels/figure_6/figure_6C.rds")
-figure_6D = readRDS("manuscript/figure_panels/figure_6/figure_6D.rds")
+# new row under panel A: Figure S8 panels A/B + binned Figure S9B
+figure_6B = readRDS("manuscript/figure_panels/figure_6/figure_6B.rds") |> prep_plot("B", all_margin = 3)
+figure_6C = readRDS("manuscript/figure_panels/figure_6/figure_6C.rds") |> prep_plot("C", all_margin = 3)
+figure_6D = readRDS("manuscript/figure_panels/figure_6/figure_6D.rds") |> prep_plot("D", all_margin = 3)
+figure_6E = readRDS("manuscript/figure_panels/figure_6/figure_6E.rds")
+figure_6F = readRDS("manuscript/figure_panels/figure_6/figure_6F.rds")
+figure_6G = readRDS("manuscript/figure_panels/figure_6/figure_6G.rds")
 
 # save final completed plot
-figure_6 = figure_6A / figure_6B / figure_6C / figure_6D
-ggsave("manuscript/Figure_6/Figure_6.pdf", width = 13, height = 15)
-ggsave("manuscript/Figure_6/Figure_6.png", width = 13, height = 15)
-
+figure_6_new_row = figure_6B | figure_6C | figure_6D
+figure_6 = figure_6A / figure_6_new_row / figure_6E / figure_6F / figure_6G
+ggsave("manuscript/Figure_6/Figure_6.pdf", figure_6, width = 13, height = 19)
+ggsave("manuscript/Figure_6/Figure_6.png", figure_6, width = 13, height = 19)
 # Figure S6
 figure_S6A = readRDS("manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds") |> prep_plot("A")
 figure_S6B = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6B.rds") |> prep_plot("B")
