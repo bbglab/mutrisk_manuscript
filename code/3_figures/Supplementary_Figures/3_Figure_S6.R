@@ -183,7 +183,7 @@ fraction_mut = fraction_mut |> rownames_to_column("mutated_combination")
 fwrite(fraction_mut, "processed_data/GENIE_17/CRC_mutation_fractions.txt")
 
 # plot treemap indicating the fraction of mutated reads:
-treemaps = colon_apc_mut_counts |>
+FS6B = colon_apc_mut_counts |>
   group_by(Hugo_Symbol) |>
   mutate(percentage = round(n*100 / sum(n),2)) |>
   ggplot(aes(area = n, fill = mutation_type)) +
@@ -197,9 +197,11 @@ treemaps = colon_apc_mut_counts |>
                                 size = 15) +
   theme(legend.position = "none") +
   ggtitle("fraction mutated types in CRC - GENIE")
-ggsave("manuscript/Supplementary_Figures/Figure_S7/Figure_S7.png", treemaps, width = 11, height = 6, bg = "white")
-ggsave("manuscript/Supplementary_Figures/Figure_S7/Figure_S7.pdf", treemaps, width = 11, height = 6, bg = "white")
-treemaps
+
+output_dir_s6 = "manuscript/figure_panels/figure_s6"
+dir.create(output_dir_s6, showWarnings = FALSE, recursive = TRUE)
+
+saveRDS(FS6B, "manuscript/figure_panels/figure_s6/Figure_S6B.rds")
 
 # ============================================================
 # Panel A: Polyp/adenoma incidence (moved from Figure 4)
@@ -224,7 +226,7 @@ ad_incidence_mean = ad_incidence |>
   summarize(fraction_adenoma_apc = mean(fraction_adenoma_apc), .groups = "drop")
 
 # Create Panel A: Polyp incidence
-pA_adenoma = ad_incidence_mean |>
+FS6B = ad_incidence_mean |>
   ggplot(aes(x = age, y = fraction_adenoma_apc * 100)) +  # Convert to per 100
   geom_line(color = "#4a4a4a", linewidth = 1.2) +
   geom_point(color = "#4a4a4a", size = 2) +
@@ -240,14 +242,7 @@ pA_adenoma = ad_incidence_mean |>
   labs(y = "Polyp incidence per 100 people", x = "Age (years)")
 
 # Add panel label
-pA_adenoma = pA_adenoma + theme(plot.tag.position = c(-0.08, 1.03)) + labs(tag = "A")
+# FS6B = FS6B + theme(plot.tag.position = c(-0.08, 1.03)) + labs(tag = "B")
 
-# Save Panel A separately
-output_dir_s7 = "manuscript/Supplementary_Figures/Figure_S7"
-dir.create(output_dir_s7, showWarnings = FALSE, recursive = TRUE)
+saveRDS(FS6B, file.path(output_dir_s6, "Figure_S6A.rds"))
 
-ggsave(file.path(output_dir_s7, "Figure_S7A_adenoma.png"), pA_adenoma, width = 6, height = 4, dpi = 300, bg = "white")
-ggsave(file.path(output_dir_s7, "Figure_S7A_adenoma.pdf"), pA_adenoma, width = 6, height = 4, bg = "white")
-saveRDS(pA_adenoma, file.path(output_dir_s7, "Figure_S7A.rds"))
-
-cat("Panel A (adenoma incidence) saved to", file.path(output_dir_s7, "Figure_S7A_adenoma.png"), "\n")

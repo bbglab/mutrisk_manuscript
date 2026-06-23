@@ -208,3 +208,20 @@ ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.svg", figure_S5, wi
 ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.pdf", figure_S5, width = 14, height = 12)
 
 print("Figure S5 saved in manuscript/Supplementary_Figures/Figure_S5/")
+
+# Figure S6
+
+mg = 8
+
+print("Composing Figure S6")
+figure_S6A = readRDS("manuscript/figure_panels/figure_s6/Figure_S6A.rds") |> prep_plot("A", all_margin = mg)
+figure_S6_top = plot_spacer() + figure_S6A + plot_spacer() + plot_layout(widths = c(1, 3, 1)) 
+
+figure_S6B = readRDS("manuscript/figure_panels/figure_s6/Figure_S6B.rds") |> prep_plot("B", all_margin = mg)
+figure_S6 = figure_S6_top / figure_S6B + plot_layout(heights = c(1.5, 2))
+
+ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.png", figure_S6, width = 11, height = 10)
+ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.svg", figure_S6, width = 11, height = 10)
+ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.pdf", figure_S6, width = 11, height = 10)
+
+print("Figure S6 saved in manuscript/Supplementary_Figures/Figure_S6/")
