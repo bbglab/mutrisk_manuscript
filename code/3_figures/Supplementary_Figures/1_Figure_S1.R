@@ -1,12 +1,11 @@
-# General overview script:
-# Used to get an overview of the input data.
-# update on the script. From now on using the following information:
-# Data on Colon, Blood, Skin and Lung tissue
+# 1_Figure_S1.R
+# Purpose: Generate supplementary figure S1 -- exonic mutation overview, whole-genome mutation rates, and trinucleotide context analysis.
 library(readxl)
 library(TxDb.Hsapiens.UCSC.hg19.knownGene)
 library(ggpp)
 library(ggh4x)
 library(plyranges)
+library(GenomeInfoDb)
 source("code/0_functions/analysis_variables.R")
 
 ### define the plotting colors:
@@ -77,7 +76,6 @@ fwrite(meta_age, "processed_data/metadata_all.txt.gz")
 
 Supp_tables$Supplementary_table_1 = sample_wgs_exome |>  left_join(meta_age) |> dplyr::select(-id)
 Supp_tables$Supplementary_table_2 = meta_age |> dplyr::select(tissue, category, donor, age) |> distinct()
-Supp_tables$Supplementary_table_3 = meta # table 3 is now redundant, check if this can be removed
 
 # Numbers for the manuscript: Take only the samples for which the mutations are also matching all filters
 n_clones_n_donors = meta_age |>
@@ -304,8 +302,8 @@ ggsave("manuscript/Supplementary_Figures/Figure_S1/Figure_S1.png", Figure_S1,  w
 ggsave("manuscript/Supplementary_Figures/Figure_S1/Figure_S1.pdf", Figure_S1,  width = 15, height = 10)
 
 
-# figure S6B - comparison of colon normal and POLD1 mutated cells
-figure_S6B = colon_data |>
+# figure S5B - comparison of colon normal and POLD1 mutated cells
+figure_S5B = colon_data |>
   filter(category %in% c("normal", "POLD1")) |>
   ggplot(aes(x = age, y = corrected_wgs, fill = category, group = category, color = category)) +
   geom_abline(data = models_nonexposed |> filter(grepl("colon", tissue)),
@@ -319,8 +317,8 @@ figure_S6B = colon_data |>
   theme(legend.position = "inside", legend.position.inside = c(0.1, 0.7), plot.title = element_text(hjust = 0.5)) +
   labs(y = NULL, fill  = NULL, title = "Colon", x = "Age (years)") +
   guides(color = "none")
-figure_S6B
-saveRDS(figure_S6B, "manuscript/Supplementary_Figures/Figure_S6/Figure_S6B.rds")
+figure_S5B
+saveRDS(figure_S5B, "manuscript/figure_panels/figure_s5/Figure_S5B.rds")
 
 # TODO - check the plot below - see if it is possible to make it with the lmm-based approaches for correctness.
 # make a simple plot for the biorender figure:
@@ -386,7 +384,7 @@ profiles_signatures = plot_96_profile2(contribution, relative = F, free_y = TRUE
   theme(axis.text = element_blank(), axis.text.x = element_blank(), axis.ticks.y = element_blank())
 ggsave("plots/trinuc_contribution.png", profiles_signatures, width = 5.4, height = 3.6)
 
-ggsave("plots/trinuc_contirbution.pdf", profiles_signatures_clean, width = 6.5, height = 5)
+ggsave("plots/trinuc_contirbution.pdf", profiles_signatures, width = 6.5, height = 5)
 
 
 # plot the contribution in the 6 different mutation types

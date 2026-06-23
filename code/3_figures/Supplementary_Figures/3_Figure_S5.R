@@ -1,4 +1,4 @@
-# supplementary figure 6:
+# supplementary figure 5:
 library(Biostrings)
 source("code/0_functions/analysis_variables.R")
 
@@ -20,7 +20,7 @@ trinuc_counts_TP53_all = data.frame(trinucleotide = names(trinucs),
                            TP_53_counts = as.numeric(trinucs))
 
 # trinuc counts for driver mutations only
-cancer_boostdm_driver = cancer_boostdm |> filter(driver == TRUE)
+cancer_boostdm_driver = cancer_boostdm |> filter(boostDM_class == TRUE)
 trinucs = DNAStringSet(cancer_boostdm_driver$trinuc)
 trinucs[substr(trinucs, 2,2) %in% c("A", "G")] = reverseComplement(trinucs[substr(trinucs, 2,2) %in% c("A", "G")])
 
@@ -57,26 +57,36 @@ triplets_TP53_all = cancer_boostdm |> select(-trinuc) |>
   count(triplet, name = "TP53 full gene ")
 
 triplets_TP53_driver = cancer_boostdm |> select(-trinuc) |>
-  filter(driver == TRUE) |>
+  filter(boostDM_class == TRUE) |>
   left_join(triplet_match_substmodel) |>
   count(triplet, name = "TP53 driver mutations")
 
 POLD1_counts = POLD1_muts |>
   count(triplet, name = "POLD1 overall\nmutation profile")
+# 1. Define the label mapping
+facet_labels <- c(
+  `TP53 driver mutations` = "Mutations",
+  `POLD1 overall\nmutation profile` = "Mutations",
+  `trinucleotide presence\nwhole genome` = "Mutable sites"
+)
 
-figure_S6C = left_join(POLD1_counts, triplets_TP53_driver) |>
+figure_S5C = left_join(POLD1_counts, triplets_TP53_driver) |>
   left_join(triplet_match_substmodel |> select(-mut_type, -strand) |> distinct()) |>
   left_join(sites_whole_genome |> dplyr::rename(trinuc = trinucleotide, `trinucleotide presence\nwhole genome` = trinuc_counts)) |>
   pivot_longer(c(`TP53 driver mutations`, `POLD1 overall\nmutation profile`, `trinucleotide presence\nwhole genome`)) |>
   mutate(value = ifelse(is.na(value), 0, value)) |>
   mutate(triplet = factor(triplet, levels = TRIPLETS_96)) |>
-  ggplot(aes(x = triplet, y= value, fill = type)) + geom_col() +
-  facet_grid(name ~ . , scales = "free_y") +
+  ggplot(aes(x = triplet, y= value, fill = type)) + 
+  geom_col() +
+  facet_grid(name ~ . , scales = "free_y", switch = "y", labeller = as_labeller(facet_labels)) + 
   cowplot::theme_cowplot() +
   scale_fill_manual(values = COLORS6) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8),
-        strip.text = element_text(size = 10)) +
+        strip.text = element_text(size = 10),
+        strip.placement = "outside",         
+        strip.background = element_blank()) + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
-  labs(x = NULL, y = "Mutations/\nmutable sites")
-saveRDS(figure_S6C, "manuscript/Supplementary_Figures/Figure_S6/Figure_S6C.rds")
+  labs(x = NULL, y = NULL)
+
+saveRDS(figure_S5C, "manuscript/figure_panels/figure_s5/Figure_S5C.rds")
 

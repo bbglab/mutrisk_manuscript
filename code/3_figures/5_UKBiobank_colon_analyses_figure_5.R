@@ -100,7 +100,7 @@ ratios = fread(paste0("processed_data/", tissue, "/", tissue, "_mut_ratios.tsv.g
   filter(gene_name %in% c("APC", "KRAS", "TP53", "BRAF"))
 
 # load the mutation data:
-colon_bDM = fread("processed_data/boostdm/boostdm_genie_cosmic/colon_boostDM_cancer.txt.gz")
+colon_bDM = fread("processed_data/boostdm/boostdm_genie_cosmic/colon_boostDM_cancer.txt.gz") |> mutate(driver = boostDM_class)
 
 # Calculate the driver mutation rates
 KRAS_single_snv_muts = colon_bDM[gene_name == "KRAS" & driver == TRUE, .N,
@@ -726,9 +726,10 @@ figure_no_SBS89 = df_APC_noSBS89 |>
   labs(x = "Age (years)", color = NULL) +
   theme(legend.position = "inside", legend.position.inside = c(0.1, 0.8))
 
-figure_S6A = figure_no_SBS88
-saveRDS(figure_S6A, "manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds")
+figure_S5A = figure_no_SBS88
+dir.create("manuscript/figure_panels/figure_s5", showWarnings = FALSE, recursive = TRUE)
+saveRDS(figure_S5A, "manuscript/figure_panels/figure_s5/Figure_S5A.rds")
 
 # summary plot comparing the mutational load
 supplementerary_figure_B = prep_plot(figure_no_SBS89, "B")
-figure_S6A + supplementerary_figure_B
+figure_S5A + supplementerary_figure_B

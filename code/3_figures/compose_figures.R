@@ -196,13 +196,15 @@ ggsave("manuscript/Figure_6/Figure_6.png", figure_6, width = 16, height = 19)
 ggsave("manuscript/Figure_6/Figure_6.svg", figure_6, width = 16, height = 19)
 print("Figure6 saved in manuscript/Figure_6/")
 
-# Figure S6
+# Figure S5
 
-print("Composing Figure S6")
-figure_S6A = readRDS("manuscript/Supplementary_Figures/Figure_S6/figure_S6A.rds") |> prep_plot("A")
-figure_S6B = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6B.rds") |> prep_plot("B")
-figure_S6C = readRDS("manuscript/Supplementary_Figures/Figure_S6/Figure_S6C.rds") |> prep_plot("C")
-figure_S6 = (figure_S6A | figure_S6B) / figure_S6C
-ggsave("manuscript/Supplementary_Figures/Figure_S6/Figure_S6.png", figure_S6, width = 14, height = 12)
+print("Composing Figure S5")
+figure_S5A = readRDS("manuscript/figure_panels/figure_s5/Figure_S5A.rds") |> prep_plot("A")
+figure_S5B = readRDS("manuscript/figure_panels/figure_s5/Figure_S5B.rds") |> prep_plot("B")
+figure_S5C = readRDS("manuscript/figure_panels/figure_s5/Figure_S5C.rds") |> prep_plot("C")
+figure_S5 = (figure_S5A | figure_S5B) / figure_S5C
+ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.png", figure_S5, width = 14, height = 12)
+ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.svg", figure_S5, width = 14, height = 12)
+ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.pdf", figure_S5, width = 14, height = 12)
 
-print("Figure4 saved in manuscript/Supplementary_Figures/Figure_S6/")
+print("Figure S5 saved in manuscript/Supplementary_Figures/Figure_S5/")
