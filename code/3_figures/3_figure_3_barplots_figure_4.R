@@ -1,6 +1,7 @@
 # Script to produce figure 3, and the barplots indicating mutation accumulatoin in figure 4
 library(MutationalPatterns)
 library(ggh4x)
+library(gt)
 source("code/0_functions/analysis_variables.R")
 getwd()
 
@@ -64,6 +65,7 @@ saveRDS(F1B, "manuscript/figure_panels/figure_1/figure_1B.rds")
 #   as.data.table()
 # max CpG / non-CpG rate: 30, lowest is 6
 
+
 # print mutation rate differences CpG vs non-CpG
 cpg_muts = expected_rates |> left_join(triplet_match_substmodel) |>
   mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
@@ -85,6 +87,36 @@ barplot_lung = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_intere
                                  cell_probabilities = FALSE) + labs(x = NULL)
 barplot_blood = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "TP53", tissue_select = "blood",
                                   tissue_name = "Blood", cell_probabilities = FALSE) + labs(y = NULL)
+
+# first version of figure 3A
+F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
+saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
+
+# update figure 3A with driver numbers:
+driver_numbers = sapply(boostdm, \(x) x |> filter(gene_name == "TP53") |> pull(driver) |> table()   ) |>
+  t() |> as.data.frame() |>
+  mutate(label = paste0("  | TP53 driver SNVs: ", driver, " | non-driver SNVs: ", `non-driver`))
+# reformat driver numbers:
+driver_numbers = driver_numbers |> select(-label) |>
+  rownames_to_column("Tissue") |>
+  mutate(across(c(driver, `non-driver`), ~  format(., big.mark = ","))) |>
+  `colnames<-`(c("Tissue", "TP53 driver SNV sites", "TP53 non-driver SNV sites")) |>
+  mutate(Tissue = c("Blood", "Colon", "Lung"))
+
+cols <- c("#ff725c", "#3ca951" , "#4269d0")
+gt_driver_number = driver_numbers %>%  gt() %>%
+  text_transform(locations = cells_body(columns = 1),
+    fn = function(x) paste0('<span style="background: ', cols, '; color: white; padding: 4px 12px;
+                            border-radius: 20px; font-weight: 500; display: inline-block;">',      x, '</span>')) %>%
+  cols_width(1 ~ px(100), everything() ~ px(155)) |>
+  cols_align("center", 1) |>  tab_options(column_labels.font.weight = "bold", data_row.padding = px(10))
+
+gt_driver_number
+gtsave(gt_driver_number, "manuscript/figure_panels/figure_3/figure_3B_table.png")
+
+barplot_colon$labels$subtitle = paste0(barplot_colon$labels$subtitle, driver_numbers["colon", 3])
+barplot_lung$labels$subtitle = paste0(barplot_lung$labels$subtitle, driver_numbers["lung", 3])
+barplot_blood$labels$subtitle = paste0(barplot_blood$labels$subtitle, driver_numbers["blood", 3])
 F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
 saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
 
@@ -191,7 +223,7 @@ dotplot_df = rbindlist(dotplot_list) |>
   mutate(tissue = factor(tissue, levels = c("colon", "lung", "blood")),
                          tissue_category = paste0(tissue, "_", category))
 
-# Manuscript numbers: colon drivers TP53
+# Manuscript numbers: colon drivers TP53:
 dotplot_df |>
   filter(tissue_category == "colon_normal" & driver == "driver") |>
   left_join(metadata) |> filter(age > 35) |>

@@ -2,7 +2,6 @@
 # Aims of the script: Generate plots for figure 1 and 2 of the manuscript
 # 1. get the exome-wide mutation rate estimates across the different cohort
 # 2. get the exome-wide mutation "saturation" plots across the genome
-
 library(ggh4x)
 source("code/0_functions/analysis_variables.R")
 set.seed(1234)
@@ -387,14 +386,17 @@ ggsave("plots/coverage_saturation/presentation_line1.png", exome_analysis_normal
 ggsave("plots/coverage_saturation/presentation_line2.png", exome_analysis_normal$plot_list$plot_saturation_curve_ci,
        width = 10, height = 3.7)
 
-# perform similar analysis, now setting the groupby to "sampleID". Used for supplementary figures
+# perform similar analysis, now setting the groupby to "sampleID". Used for supplementary figures.
+# This analysis can take quite long, since >4,000 individual samples need to be taken into account
 #sampleID_exome_analysis = analyze_probability(gene_counts = gene_counts, analysis_name = "exome analysis", groupby = "sampleID")
 sampleID_exome_analysis_normal = analyze_probability(gene_counts = gene_counts, analysis_name = "exome analysis", groupby = "sampleID", filter_normal = TRUE)
 save_plots(sampleID_exome_analysis_normal$plot_list, path = "plots/coverage_saturation/", name = "sampleID_normal_exome", width = 7, height = 5)
 save_plots(sampleID_exome_analysis_normal$plot_list, path = "plots/coverage_saturation/", name = "sampleID_normal_exome_wideplot", width = 10, height = 5)
 
-figure_S4A = sampleID_exome_analysis_normal$plot_list$plot_saturation_curve_ci |>
+figure_S4A_raw = sampleID_exome_analysis_normal$plot_list$plot_saturation_curve_ci |>
   prep_plot("A", all_margin = 8)
+figure_S4A = ggrastr::rasterise(figure_S4A_raw)
+
 figure_S4B = sampleID_exome_analysis_normal$plot_list$plot_saturation_age +
   facet_wrap(. ~ tissue, scales = "free_y") +
   cowplot::panel_border() +
@@ -402,7 +404,9 @@ figure_S4B = sampleID_exome_analysis_normal$plot_list$plot_saturation_age +
   theme(legend.position = "none")
 figure_S4B = prep_plot(figure_S4B, "B", all_margin = 8)
 figure_S4 = figure_S4A / figure_S4B + plot_layout(widths = c(1.65, 1))
-ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4.png", figure_S4, width = 12, height = 8)
+saveRDS(figure_S4, "manuscript/Supplementary_Figures/Figure_S4/figure_S4_top.rds")
+ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4_old.png", figure_S4, width = 12, height = 8)
+
 
 # Save as supplementary plot:
 exome_analysis_normal$plot_list$plot_saturation_curve_ci

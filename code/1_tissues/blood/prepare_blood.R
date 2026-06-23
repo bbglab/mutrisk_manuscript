@@ -42,7 +42,7 @@ fread("raw_data/blood/Summary_cut.csv") |>
 # filter out cord blood samples, as it is not possible to estimate VAFs for these samples
 cell_muts_no_CB = cell_muts |> filter(!grepl("CB", donor))
 supplementary_note_plot_blood = create_vaf_overview(cell_muts_no_CB, c("KX001", "KX008"))
-ggsave("manuscript/Supplementary_notes/Supplementary_Note_X/figure_blood.png", supplementary_note_plot_blood, width = 10, height = 12)
+ggsave("manuscript/Supplementary_notes/Supplementary_Note_1/figure_blood.png", supplementary_note_plot_blood, width = 10, height = 12)
 
 # thus, samples from donor KX007 can be filtered out
 cell_muts = cell_muts |>
@@ -52,14 +52,24 @@ cell_muts = cell_muts |>
 # normal blood
 results = effect_coverage_vaf(cell_muts |> filter(category == "normal"),
                               metadata = metadata |> filter(coverage > 9 & category == "normal")) # at a coverage of 9 we observe no effect of coverage
-ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_I/", tissue, "_coverage_vaf_correction.png"), results$plot, width = 7, height = 4.5)
+ggsave(paste0("manuscript/Supplementary_notes/Supplementary_Note_1/", tissue, "_coverage_vaf_correction.png"), results$plot, width = 7, height = 4.5)
 
 # filter data for minimal coverage threshold:
 metadata_filtered = metadata |> filter(coverage > 9)
 cell_muts_filtered = cell_muts |> filter(sampleID %in% unique(metadata_filtered$sampleID)) |>
   filter(donor %in% unique(metadata_filtered$donor))
 
-# save data
+
+# gather statistics of the number of samples filtered out:
+nmuts = nrow(cell_muts)
+nmuts_filtered = nrow(cell_muts_filtered)
+nmuts ; nmuts_filtered ; nmuts_filtered / nmuts
+n_samples = n_distinct(cell_muts$sampleID)
+n_samples_filtered = n_distinct(cell_muts_filtered$sampleID)
+n_samples ; n_samples_filtered ; n_samples - n_samples_filtered
+cell_muts_filtered
+
+# save data# savenmuts_filtered data
 fwrite(cell_muts_filtered, file = paste0("processed_data/", tissue, "/", tissue, "_cell_muts.tsv.gz"))
 fwrite(metadata_filtered, paste0(outdir, tissue, "_metadata.tsv"))
 

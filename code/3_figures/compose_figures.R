@@ -25,7 +25,7 @@ figure_1_bottom = figure_1C + figure_1D + plot_layout(widths = c(2.5, 1))
 figure_1  = figure_1A / figure_1_middle / figure_1_bottom + plot_layout(heights =  c(1,1, 1))
 
 ggsave("manuscript/Figure_1/figure_1.png", figure_1, width = 16, height = 13)
-ggsave("manuscript/Figure_1/figure_1.pdf", figure_1, width = 16, height = 13)
+#ggsave("manuscript/Figure_1/figure_1.pdf", figure_1, width = 16, height = 13) # due to some error with superscript
 ggsave("manuscript/Figure_1/figure_1.svg", figure_1, width = 16, height = 13)
 
 print("Figure1 saved in manuscript/Figure_1")
@@ -131,6 +131,7 @@ print("Composing Figure 4")
 mg = 5
 
 # perform these operations later in the compose-figures part:
+mg = 5
 list_figure_4AB = readRDS("manuscript/figure_panels/figure_4/figures_AB.rds")
 figure_4A = list_figure_4AB[[1]] |> prep_plot(label = 'A', all_margin = mg)
 figure_4B = list_figure_4AB[[2]]  |> prep_plot(label = 'B', all_margin = mg)
@@ -209,13 +210,20 @@ ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.pdf", figure_S5, wi
 
 print("Figure S5 saved in manuscript/Supplementary_Figures/Figure_S5/")
 
+# Figure S4
+figure_S4_top = readRDS("manuscript/Supplementary_Figures/Figure_S4/figure_S4_top.rds")
+figure_S4_bottom = readRDS("manuscript/Supplementary_Figures/Figure_S4/Figure_S4_bottom.rds") |> prep_plot("C", all_margin = 5)
+figure_S4 = figure_S4_top / figure_S4_bottom
+#ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4.pdf", figure_S4,  width = 15, height = 13)
+ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4.png", figure_S4, width = 15, height = 13)
+
 # Figure S6
 
 mg = 8
 
 print("Composing Figure S6")
 figure_S6A = readRDS("manuscript/figure_panels/figure_s6/Figure_S6A.rds") |> prep_plot("A", all_margin = mg)
-figure_S6_top = plot_spacer() + figure_S6A + plot_spacer() + plot_layout(widths = c(1, 3, 1)) 
+figure_S6_top = plot_spacer() + figure_S6A + plot_spacer() + plot_layout(widths = c(1, 3, 1))
 
 figure_S6B = readRDS("manuscript/figure_panels/figure_s6/Figure_S6B.rds") |> prep_plot("B", all_margin = mg)
 figure_S6 = figure_S6_top / figure_S6B + plot_layout(heights = c(1.5, 2))
