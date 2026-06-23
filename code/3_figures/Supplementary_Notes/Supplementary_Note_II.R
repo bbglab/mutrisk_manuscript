@@ -12,9 +12,9 @@ metadata = lapply(metadata_files, \(x) fread(x)[,c("sampleID", "category", "age"
   rbindlist(idcol = "tissue")
 
 # Load gene_of_interest boostdm
-boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "lung|colon|CH", full.names = TRUE)
+boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "[lung|colon|CH]_boostDM_cancer.txt.gz", full.names = TRUE)
 names(boostdm_files) = c("blood", "colon", "lung")
-boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(driver == TRUE, "driver", "non-driver")))
+boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(boostDM_class == TRUE, "driver", "non-driver")))
 
 # load the mutation rates
 expected_rate_list = list()
@@ -93,6 +93,9 @@ BRAF = get_n_muts("colon", "BRAF") |> plot_n_muts(driver = TRUE)
 PIK3CA = get_n_muts("colon", "PIK3CA") |> plot_n_muts(driver = TRUE)
 
 colon_plot = SMAD4 / BRAF / PIK3CA
+
+output_dir = "manuscript/Supplementary_notes/Supplementary_Note_III/"
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 ggsave("manuscript/Supplementary_notes/Supplementary_Note_III/SN_II_Fig1_colon.png",
        colon_plot, width = 10, height = 14)
 

@@ -126,6 +126,8 @@ plot = df |>
 plot_log = plot +
   scale_y_log10()
 
+output_dir = "manuscript/Supplementary_notes/Supplementary_Note_5/"
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 ggsave("manuscript/Supplementary_notes/Supplementary_Note_5/SN5_Figure_2.png", plot, width = 18, height = 15, bg = "white")
 ggsave("manuscript/Supplementary_notes/Supplementary_Note_5/SN5_Figure_3.png", plot_log, width = 18, height = 15, bg = "white")
 

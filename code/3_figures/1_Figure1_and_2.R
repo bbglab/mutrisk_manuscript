@@ -213,7 +213,7 @@ analyze_probability = function(gene_counts, analysis_name, groupby = "donor",
       colnames(m) = names(expected_rates_list)
 
       for (groupid in names(expected_rates_list)) {
-        print(groupid)
+        # print(groupid)
         expected_rates_sample = expected_rates_list[[groupid]]
         genome_rates = get_adjusted_rates(expected_rates_sample = expected_rates_sample,
                                           gene_counts = gene_counts, ratios_cat = ratios_cat)
@@ -255,7 +255,15 @@ analyze_probability = function(gene_counts, analysis_name, groupby = "donor",
     ncells_ci = tissue_ncells_ci[tissue_ncells_ci$tissue == tissue,]
     ncells_ci_wide = tissue_ncells_ci_wide[tissue_ncells$tissue == tissue,]
 
-    result_plot_list[[tissue]] = result_plot # save for later analysis
+    # This code was needed to be added back from f29e078 where it was removed
+    result_plot_df = result_plot |>
+      ungroup() |>
+      mutate(n_mutated_cells = value * ncells,
+             ncells = ncells,
+             x = rep(1:binsize, n_groups(result_plot)) / 1e4,
+             x = x/max(x)) # normalize to 1
+
+    result_plot_list[[tissue]] = result_plot_df # save for later analysis
 
     ##### get the mutated probability
     gene_site_counts = gene_counts
@@ -276,7 +284,7 @@ analyze_probability = function(gene_counts, analysis_name, groupby = "donor",
       list_intersects = list()
       list_intersects_ci = list()
       for (name in names(expected_rates_list)) {
-        print(name)
+        # print(name)
         list_probs[[name]] = get_prob_mutated_range(expected_rates_sample = expected_rates_list[[name]],
                                                     gene_counts = gene_site_counts,
                                                     ratios_cat = ratios_cat,

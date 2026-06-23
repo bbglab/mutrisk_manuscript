@@ -1,5 +1,6 @@
-# Figure S3
-# summary of the signature refitting methods across all cohorts
+# 2_Figure_S2.R
+# Purpose: Generate supplementary figure S2 -- signature refitting analysis
+#   across blood, colon, and lung cohorts.
 source("code/0_functions/analysis_variables.R")
 
 # load metadata
@@ -139,7 +140,7 @@ donor_contri_colon = ggplot(colon_mean_sig_age_rel, aes(x = donor_age, y = rel_c
 
 ### Lung
 lung_metadata = fread("processed_data/lung/lung_metadata.tsv")
-lung_sigs = fread("processed_data/lung/non-smoker//signature_contributions.tsv")
+lung_sigs = fread("processed_data/lung/non-smoker/signature_contributions.tsv")
 
 lung_mean_sig_age = lung_sigs |>
   left_join(lung_metadata) |>
