@@ -14,9 +14,10 @@ metadata = lapply(metadata_files, \(x) fread(x)[,c("sampleID", "category", "age"
   rbindlist(idcol = "tissue")
 
 # Load gene_of_interest boostdm
-boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "lung|colon|CH", full.names = TRUE)
+boostdm_files = list.files("processed_data/boostdm/boostdm_genie_cosmic/", pattern = "[lung|colon|CH]_boostDM_cancer.txt.gz", full.names = TRUE)
 names(boostdm_files) = c("blood", "colon", "lung")
-boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(driver == TRUE, "driver", "non-driver")))# change names for overview
+boostdm = lapply(boostdm_files,  \(x) fread(x) |> mutate(driver = ifelse(boostDM_class == TRUE, "driver", "non-driver")))# change names for overview
+
 
 # load the mutation rates
 expected_rate_list = list()
@@ -48,20 +49,22 @@ saveRDS(F1B, "manuscript/figure_panels/figure_1/figure_1B.rds")
 
 # Manuscript numbers
 # calculate number of CpG vs non-CpG rate
-rates_CpG = expected_rates |>
-  left_join(triplet_match_substmodel) |>
-  left_join(metadata) |>
-  filter(tissue == "colon" & category == "normal") |>
-  mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
-  group_by(sampleID, age, cpg, trinuc) |>
-  summarize(sum_rate = sum(mle), .groups = "drop_last") |>
-  summarize(mean_rate = mean(sum_rate)) |>
-  pivot_wider(names_from = cpg, values_from = mean_rate) |>
-  mutate(fold_change = CpG / `non-CpG`) |>
-  arrange(fold_change) |>
-  as.data.table()
-max(rates_CpG$fold_change) ; min(rates_CpG$fold_change)
-# max CpG / non-CpG rate: 32.67651, lowest is 6.575318 ) - in text rounded as 33 and 7
+# rates_CpG = expected_rates |>
+#   left_join(triplet_match_substmodel) |>
+#   left_join(metadata) |>
+#   filter(tissue == "colon" & category == "normal") |>
+#   mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
+#   group_by(sampleID, age, cpg, trinuc) |>
+#   summarize(sum_rate = sum(mle), .groups = "drop_last") |>
+#   summarize(mean_rate = mean(sum_rate)) |>
+#   pivot_wider(names_from = cpg, values_from = mean_rate) |>
+# Error: unexpected symbol in:
+#  mutate(fold_change = CpG / `non-CpG`) |>
+#   mutate(fold_change = CpG / `non-CpG`) |>
+#   arrange(fold_change) |>
+#   as.data.table()
+# max CpG / non-CpG rate: 30, lowest is 6
+
 
 # print mutation rate differences CpG vs non-CpG
 cpg_muts = expected_rates |> left_join(triplet_match_substmodel) |>
@@ -117,6 +120,19 @@ barplot_blood$labels$subtitle = paste0(barplot_blood$labels$subtitle, driver_num
 F3A = wrap_plots(barplot_colon, barplot_lung, barplot_blood, ncol = 1, guides = "collect")
 saveRDS(F3A, "manuscript/figure_panels/figure_3/figure_3A.rds")
 
+# Supplementary table for figure 3B: count unique TP53 genomic sites per tissue by driver/non-driver status
+# Site = chr:pos:ref:alt (unique row in boostdm)
+tp53_site_counts = lapply(names(boostdm), function(t) {
+  tp53_data = boostdm[[t]][gene_name == "TP53"]
+  data.table(
+    tissue = t,
+    driver_sites = tp53_data[driver == "driver", .N],
+    nondriver_sites = tp53_data[driver == "non-driver", .N]
+  )
+}) |> rbindlist()
+
+saveRDS(tp53_site_counts, "manuscript/figure_panels/figure_3/figure_3B_table.rds")
+
 # Supplementary Figure 2 - TP53 for all tissues
 tissue_categories = ratios |> select(tissue, category) |> distinct()
 tissue_categories = tissue_categories[-5]
@@ -136,6 +152,7 @@ figure_S3 = wrap_plots(plot_list, nrow = 4) + plot_layout(guides = "collect") +
   plot_annotation(title = 'TP53: Expected number of mutated cells')
 ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.png", figure_S3, width = 14, height = 12)
 ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.svg", figure_S3, width = 14, height = 12)
+ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.pdf", figure_S3, width = 14, height = 12)
 
 # APC colon barplot
 APC_colon_normal = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "APC",
@@ -289,45 +306,3 @@ F3C
 F3C_bottom = wrap_plots(tissue_plots[-1], widths = c(2.8, 1))
 F3C = tissue_plots[[1]] / F3C_bottom
 F3C
-
-
-# Supplementary Figure: Correct for the number of cells in young individuals":
-df_tissue_cells = tissue_ncells_ci_age |>
-  dplyr::select(tissue, mid_estimate, age_category) |>
-  mutate(flat_cell_number = rep(tissue_ncells_ci_age$mid_estimate[1:3], 2))
-
-df_tissue_adult_child = df_tissue |>
-  mutate(age_category = ifelse(age > 15, "adult", "child")) |>
-  left_join(df_tissue_cells) |>
-  mutate(across(c(mle, cilow, cihigh),  ~  (./flat_cell_number) * mid_estimate))
-
-tissue_plots = tissue_plots_raw =  list()
-tissue_order = c("colon", "lung", "blood")
-for (i in 1:3) {
-
-  select_tissue = tissue_order[[i]]
-  df_tissue = df_total_muts |>
-    filter(tissue %in% select_tissue) |>
-    filter(driver == "driver")
-
-  plt = ggplot(df_tissue, aes(x = age, y = mle, color = tissue_category)) +
-    geom_pointrange(aes(ymin = cilow, ymax = cihigh)) +
-    facet_nested(. ~ tissue + category, axes = "y", remove_labels = "y") +
-    scale_color_manual(values = tissue_category_colors) +
-    scale_y_continuous(labels = scales::label_comma(), limits = c(0,NA)) +
-    theme_cowplot() +
-    theme(panel.grid = element_blank(), strip.background = element_blank(),
-          legend.position = "none", ggh4x.facet.nestline = element_line()) +
-    labs(x = "Age (years)", y = "Number of cells with\nTP53 driver mutation")
-  tissue_plots_raw[[select_tissue]] = plt
-  tissue_plots[[select_tissue]] = prep_plot(plt, LETTERS[i+2])
-}
-
-tissue_plots_raw[[2]] = tissue_plots_raw[[2]] + labs(y = NULL)
-tissue_plots_raw[[3]] = tissue_plots_raw[[3]] + labs(y = NULL)
-
-saveRDS(tissue_plots_raw, "manuscript/Supplementary_Figures/Figure_SX/figure_3CDE.rds")
-tissue_plots_raw = readRDS("manuscript/Supplementary_Figures/Figure_SX/figure_3CDE.rds")
-tissue_plots = mapply(prep_plot, tissue_plots_raw, label = c("C", "D", "E"), all_margin = 8)
-figure_3_bottom = wrap_plots(tissue_plots, nrow = 1, widths = c(4, 3, 1.2))
-ggsave("manuscript/Supplementary_Figures/Figure_SX/Supplementary_Figure_SX_TP53_counts.svg", figure_3_bottom, width = 17, height = 4)

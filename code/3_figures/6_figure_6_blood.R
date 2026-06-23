@@ -98,7 +98,7 @@ df_point = df_mirror |>
          mrate = ifelse(tissue_category == "Expected mutrate\nblood", 0-mrate, mrate)) |>
   ungroup()
 
-F5A = ggplot(df_point, aes(x = position, y = mrate)) +
+F6A = ggplot(df_point, aes(x = position, y = mrate)) +
   geom_point(color = "white") +
   geom_col(data = df_mirror, aes(fill = type)) +
   geom_text(data = data.frame(tissue_category = factor("UKBiobank CH"), position = 50, mrate = 1500, label = "DNMT3A"),
@@ -110,12 +110,12 @@ F5A = ggplot(df_point, aes(x = position, y = mrate)) +
   theme(legend.position = "none", panel.spacing.y = unit(0, "mm")) +
   labs(y = "Number expected/\nobserved muts",  x = "AA position") +
   scale_y_continuous(expand=expansion(mult=c(0,0)), breaks = scales::breaks_extended(n = 3), labels = abs)
-F5A
+F6A
 
-saveRDS(F5A, "manuscript/figure_panels/figure_5/figure_5A.rds")
+saveRDS(F6A, "manuscript/figure_panels/figure_5/figure_6A.rds")
 
 
-#### Figure 5B-C-D
+#### Figure 6B-C-D
 
 # calculate expected number of mutated cells
 calc_exp_muts = function(expected_rates, mut_positions, metadata, ratios, ncells) {
@@ -151,13 +151,17 @@ plot_figures = function(driver_sites, y_label, metadata = metadata) {
 
 
 # DNMT3A driver hotspot
-DNMT3A_R882H_hotspot = CH_bDM[aachange == "R882H" & gene_name == "DNMT3A", .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+DNMT3A_R882H_hotspot = CH_bDM[aachange == "R882H" & gene_name == "DNMT3A", .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 DNMT3A_R882H_hotspot_plots = plot_figures(DNMT3A_R882H_hotspot, "Number of cells with\nDNMT3A R882H mutation", metadata = metadata )
 
 figure_S8 = mapply(DNMT3A_R882H_hotspot_plots[2:1], c("A", "B"), FUN = prep_plot) |>
   wrap_plots()
 ggsave("manuscript/Supplementary_Figures/Figure_S8/Figure_S8.png", figure_S8, width = 10, height = 5)
 ggsave("manuscript/Supplementary_Figures/Figure_S8/Figure_S8.pdf", figure_S8, width = 10, height = 5)
+
+# export Figure S8 panels A (100,000 HSCs) and B (1.3 million HSCs) as Figure 6 row panels B and C
+saveRDS(DNMT3A_R882H_hotspot_plots$mid_estimate, "manuscript/figure_panels/figure_6/figure_6B.rds")
+saveRDS(DNMT3A_R882H_hotspot_plots$high_estimate, "manuscript/figure_panels/figure_6/figure_6C.rds")
 
 
 # calculate the time for a clone to be present at a VAF of 0.02:
@@ -185,7 +189,7 @@ age_shift_figure
 figure_S9A = age_shift_figure
 
 # figure of DNMT3A driver mutations across age
-DNMT3A_drivers = CH_bDM[gene_name == "DNMT3A" & driver == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+DNMT3A_drivers = CH_bDM[gene_name == "DNMT3A" & boostDM_class == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 DNMT3A_driver_plot = plot_figures(DNMT3A_drivers, "Number of cells with\n DNMT3A any mutation", metadata)
 ggsave("plots/blood/masha_exploration/DNMT3A_driver_plot.png", DNMT3A_driver_plot, width = 5, height = 4.5, bg = "white")
 
@@ -196,20 +200,20 @@ ggsave("plots/blood/masha_exploration/DNMT3A_all_plot.png", DNMT3A_all_plot, wid
 
 
 # comparison for Masha:
-TET2_drivers = CH_bDM[gene_name == "TET2" & driver == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+TET2_drivers = CH_bDM[gene_name == "TET2" & boostDM_class == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 TET2_driver_plot = plot_figures(TET2_drivers, "Number of cells with\nTET2 driver mutation", metadata)
 ggsave("plots/blood/masha_exploration/TET2_driver_plot.png", TET2_driver_plot, width = 5, height = 4.5, bg = "white")
 
-TP53_drivers = CH_bDM[gene_name == "TP53" & driver == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+TP53_drivers = CH_bDM[gene_name == "TP53" & boostDM_class == TRUE , .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 TP53_driver_plot = plot_figures(TP53_drivers, "Number of cells with\nTP53 driver mutation", metadata)
 ggsave("plots/blood/masha_exploration/TP53_driver_plot.png", TP53_driver_plot, width = 5, height = 4.5, bg = "white")
 
 # TET2 takes very long and is not used
-#TET2_drivers = CH_bDM[gene_name == "TET2", .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+#TET2_drivers = CH_bDM[gene_name == "TET2", .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 #TET2_all_plot = plot_figures(TET2_drivers, "Number of cells with\nTET2 any mutation", metadata)
 #ggsave("plots/blood/masha_exploration/TET2_all_plot.png", TET2_all_plot, width = 5, height = 4.5, bg = "white")
 
-TP53_drivers = CH_bDM[gene_name == "TP53", .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+TP53_drivers = CH_bDM[gene_name == "TP53", .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 TP53_all_plot = plot_figures(TP53_drivers, "Number of cells with\nTP53 any mutation", metadata)
 ggsave("plots/blood/masha_exploration/TP53_all_plot.png", TP53_all_plot, width = 5, height = 4.5, bg = "white")
 
@@ -223,19 +227,20 @@ calc_exp_muts(expected_rates, DNMT3A_drivers, metadata= metadata, ratios = ratio
   summarize(across(c(mle, cilow, cihigh, age), \(x) mean(x)*13))
 
 # make the general figure:
-plots = c(DNMT3A_driver_plot, TET2_driver_plot, TP53_driver_plot)
-plots[[2]] = plots[[2]] + labs(title = "DNMT3A") + theme(plot.title = element_text(hjust = 0.5))
-plots[[4]] = plots[[4]] + labs(title = "TET2") + theme(plot.title = element_text(hjust = 0.5))
-plots[[6]] = plots[[6]] + labs(title = "TP53") + theme(plot.title = element_text(hjust = 0.5))
-F5B = wrap_plots(plots[c(2,4,6)], byrow = FALSE) |> prep_plot(label = "B")
-F5C = wrap_plots(plots[c(1,3,5)], byrow = FALSE) |> prep_plot(label = "C")
+plots = c(DNMT3A_R882H_hotspot_plots, DNMT3A_driver_plot, TET2_driver_plot, TP53_driver_plot)
+plots[[2]] = plots[[2]] + labs(title = "DNMT3A R882H") + theme(plot.title = element_text(hjust = 0.5))
+plots[[4]] = plots[[4]] + labs(title = "DNMT3A") + theme(plot.title = element_text(hjust = 0.5))
+plots[[6]] = plots[[6]] + labs(title = "TET2") + theme(plot.title = element_text(hjust = 0.5))
+plots[[8]] = plots[[8]] + labs(title = "TP53") + theme(plot.title = element_text(hjust = 0.5))
+F6B = wrap_plots(plots[c(2,4,6,8)], ncol = 4, byrow = FALSE) |> prep_plot(label = "B")
+F6C = wrap_plots(plots[c(1,3,5,7)], ncol = 4, byrow = FALSE) |> prep_plot(label = "C")
 
 # get all the driver mutations for the watson figure:
 watson_variants = c("R882C", "R729W", "R326C", "R320*", "R882H", "R736H",
                     "Y735C", "R736C", "W860R", "R771*", "R598*", "P904L")
 
-DNMT3A_watson_drivers = CH_bDM[gene_name == "DNMT3A" & driver == TRUE  &
-                                 aachange %in% watson_variants, .N, c("gene_name", "mut_type", "aachange", "position", "driver")]
+DNMT3A_watson_drivers = CH_bDM[gene_name == "DNMT3A" & boostDM_class == TRUE  &
+                                 aachange %in% watson_variants, .N, c("gene_name", "mut_type", "aachange", "position", "boostDM_class")]
 
 mutation_list = list(
   DNMT3A_R882H = calc_exp_muts(expected_rates, DNMT3A_R882H_hotspot, metadata, ratios, ncells),
@@ -263,7 +268,7 @@ for (i in 1:3) {
 
   gene = CH_genes[i]
   UKB_gene_muts = fread(paste0("raw_data/UKBiobank/UkBiobank_", gene, "_mut_age.csv"))
-  UKB_gene_drivers = CH_bDM[gene_name %in% gene & driver == TRUE]
+  UKB_gene_drivers = CH_bDM[gene_name %in% gene & boostDM_class == TRUE]
 
   age_samples = UKB_gene_muts |>
     filter(aa_change %in% UKB_gene_drivers$aachange) |>
@@ -273,26 +278,27 @@ for (i in 1:3) {
     filter(Individuals > 2000) |>
     mutate(relative_incidence = n / Individuals)
 
+  # binned version (10-year age bins)
+  UKB_age_incidence_binned = UKB_age_incidence |>
+    mutate(age_bin = cut(Age, breaks = seq(0, 100, by = 10), right = FALSE)) |>
+    group_by(age_bin) |>
+    summarize(n = sum(n), Individuals = sum(Individuals), Age = mean(Age), .groups = "drop") |>
+    filter(Individuals >= 2000) |>
+    mutate(relative_incidence = n / Individuals)
+
   print(gene)
-  (UKB_age_incidence |>
+  (UKB_age_incidence_binned |>
     filter(Age == 55)  |> pull(relative_incidence) * 100 )|> print()
 
-  # consider grouping the data as in colon in bins of 10
-  plt = ggplot(UKB_age_incidence, aes(x = Age, y = relative_incidence)) +
-    geom_point() +
+  plt = ggplot(UKB_age_incidence_binned, aes(x = Age, y = relative_incidence)) +
+    geom_pointpath() +
     scale_y_continuous(limits = c(0, NA), labels = label_percent()) +
     theme_cowplot() +
     labs(x = "Age (years)", y = paste0("Incidence of CH in UKB with\n", gene, " driver mutation"), subtitle = gene)
 
   UKB_plot_list[[gene]] = plt
 }
-F5D = wrap_plots(UKB_plot_list) |> prep_plot(label = "D")
 
-# save figures:
-saveRDS(F5A, "manuscript/figure_panels/figure_5/figure_5A.rds")
-saveRDS(F5B, "manuscript/figure_panels/figure_5/figure_5B.rds")
-saveRDS(F5C, "manuscript/figure_panels/figure_5/figure_5C.rds")
-saveRDS(F5D, "manuscript/figure_panels/figure_5/figure_5D.rds")
 
 # for supplementary figure 9b, add the ukbiobank data
 DNMT3A_age = fread("raw_data/UKBiobank/UKB_age_frequencies_DNMT3A.tsv")
@@ -313,6 +319,30 @@ figure_S9B = DNMT3A_age_fraction |>
   scale_y_continuous(labels = label_percent()) +
   labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH")
 
+# more binned version of Figure S9B (10-year age bins) as Figure 6 row panel D
+DNMT3A_age_binned = DNMT3A_age |>
+  mutate(age_bin = cut(Age, breaks = seq(0, 100, by = 10), right = FALSE)) |>
+  group_by(age_bin) |>
+  summarize(`R/H` = sum(`R/H`), Individuals = sum(Individuals), Age = mean(Age), .groups = "drop") |>
+  filter(Individuals >= 2000) |>
+  mutate(fraction_DNMT3A_R882H = `R/H` / Individuals)
+
+figure_6D = DNMT3A_age_binned |>
+  ggplot(aes(x = Age, y = fraction_DNMT3A_R882H)) +
+  geom_pointpath() +
+  theme_cowplot() +
+  scale_y_continuous(labels = label_percent()) +
+  labs(x = "Age (years)", y = "Fraction of UKB individuals\nwith DNMT3A R882H CH", subtitle = "DNMT3A R882H")
+
+UKB_plot_list = c(list("DNMT3A R882H hotspot" = figure_6D),  UKB_plot_list)
+F6D = wrap_plots(UKB_plot_list, ncol = 4) |> prep_plot(label = "D")
+
+# save figures:
+saveRDS(F6A, "manuscript/figure_panels/figure_6/figure_6A.rds")
+saveRDS(F6B, "manuscript/figure_panels/figure_6/figure_6B.rds")
+saveRDS(F6C, "manuscript/figure_panels/figure_6/figure_6C.rds")
+saveRDS(F6D, "manuscript/figure_panels/figure_6/figure_6D.rds")
+
 # Save
 figure_S9A = prep_plot(figure_S9A, "A")
 figure_S9B = prep_plot(figure_S9B, "B")
@@ -325,7 +355,7 @@ ggsave("manuscript/Supplementary_Figures/Figure_S9/Figure_S9.pdf", figure_S9, wi
 df_DNMT3A_R882H = calc_exp_muts(expected_rates, DNMT3A_R882H_hotspot, metadata, ratios, ncells)
 model_HSCs = lm(mle ~ age, df_DNMT3A_R882H)
 summary(model_HSCs)
-prediction_DNMT3A_HSCs = predict(l_model, data.frame(age = 60))
+prediction_DNMT3A_HSCs = predict(model_HSCs, data.frame(age = 60))
 coef = coefficients(model_HSCs)
 coef[1] + (coef[2] * 60)
 
@@ -346,4 +376,3 @@ coef[1] * 60
 # results for manuscript supplementary figure 9:
 1/prediction_DNMT3A_HSCs
 1/CH_DNMT3A
-
