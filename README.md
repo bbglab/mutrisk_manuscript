@@ -24,12 +24,10 @@ install.packages("renv")
 renv::restore()
 ```
 
-<<<<<<< HEAD
+### HEAD
 Install MuSical in an environment "python37_musical" using conda or mamba:
-=======
 
 Install MuSical in an environment "python37_musical" using conda or mamba: 
->>>>>>> be3469641a960037a30b4995a80720c4586a33aa
 
 ``` bash
 
@@ -40,8 +38,4 @@ mamba install numpy scipy scikit-learn matplotlib pandas seaborn
 # Download musical
 cd  /Path/To/MuSiCal
 pip install ./MuSiCal
-<<<<<<< HEAD
 ```
-=======
-```
->>>>>>> be3469641a960037a30b4995a80720c4586a33aa
