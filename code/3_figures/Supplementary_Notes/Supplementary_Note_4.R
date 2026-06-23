@@ -145,6 +145,8 @@ supplementary_note_II_figure = barplot_ie_vs_sum / (percent_double_mut | percent
 supplementary_note_II_figure
 
 # in the end only using figure "A" was sufficient
+output_dir = "manuscript/Supplementary_notes/Supplementary_Note_4/"
+dir.create(output_dir, showWarnings = FALSE, recursive = TRUE)
 ggsave("manuscript/Supplementary_notes/Supplementary_Note_4/Supplementary_Note_4_Fig1.png", barplot_ie_vs_sum, width = 12, height = 5, bg = "white")
 
 

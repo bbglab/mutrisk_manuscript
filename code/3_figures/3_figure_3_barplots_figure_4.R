@@ -120,6 +120,7 @@ figure_S3 = wrap_plots(plot_list, nrow = 4) + plot_layout(guides = "collect") +
   plot_annotation(title = 'TP53: Expected number of mutated cells')
 ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.png", figure_S3, width = 14, height = 12)
 ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.svg", figure_S3, width = 14, height = 12)
+ggsave("manuscript/Supplementary_Figures/Figure_S3/Figure_S3.pdf", figure_S3, width = 14, height = 12)
 
 # APC colon barplot
 APC_colon_normal = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "APC",
