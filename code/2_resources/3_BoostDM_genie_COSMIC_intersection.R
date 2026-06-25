@@ -108,7 +108,8 @@ euler_boostdm_cancer_present = function(boostdm_cancer, title) {
 
 # first get the observed mutations for the single samples. Merge on the change on the amino acid level
 tissue = "pancancer"
-bDM_cancer_intersect = intersect_boostDM_cancer(boostdm_cohort = boostdm_hg19[cohort == "CANCER"],
+boostdm_pancancer = boostdm_hg19[cohort == "CANCER", ]
+bDM_cancer_intersect = intersect_boostDM_cancer(boostdm_cohort = boostdm_pancancer,
                                                 cosmic_cohort = COSMIC_cancer_type,  genie_cohort = genie_cancer_type)
 bdmFile = paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt")
 fwrite(bDM_cancer_intersect, bdmFile)
@@ -125,6 +126,12 @@ bDM_colon_intersect = intersect_boostDM_cancer(boostdm_colon, cosmic_cohort, gen
 bdmFile = paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt")
 fwrite(bDM_colon_intersect, bdmFile)
 R.utils::gzip(bdmFile, overwrite = TRUE)
+
+#### Cosmic/Genie Intersection Colon ####
+tissue = "colon_pancancer"
+bDM_pancancer_colon_intersect = intersect_boostDM_cancer(boostdm_pancancer, cosmic_cohort, genie_cohort)
+fwrite(bDM_pancancer_colon_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt.gz"))
+
 
 # make supplementary figure S3
 euler_boostdm_cancer_present(bDM_colon_intersect |> filter(gene_name == "TP53"),
@@ -163,6 +170,29 @@ R.utils::gzip(bdmFile)
 # fwrite(bDM_ns_intersect, bdmFile)
 # R.utils::gzip(bdmFile)
 
+fwrite(bDM_lung_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt.gz"))
+
+#### Cosmic/Genie Intersection Colon ####
+tissue = "lung_pancancer"
+bDM_pancancer_lung_intersect = intersect_boostDM_cancer(boostdm_pancancer, cosmic_cohort, genie_cohort)
+fwrite(bDM_pancancer_lung_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt.gz"))
+
+
+#### Blood #####
+tissue = "NON_SOLID"
+boostdm_ns = boostdm_hg19[cohort == "NON_SOLID", ]
+cosmic_cohort = COSMIC_cancer_type |> filter(PRIMARY_SITE == "haematopoietic_and_lymphoid_tissue")
+genie_cohort =  genie_cancer_type |>   filter(CANCER_TYPE %in%  c("Leukemia", "B-Lymphoblastic Leukemia/Lymphoma", "Myeloproliferative Neoplasms",
+                                                                  "Myelodysplastic Syndromes", "Mature T and NK Neoplasms",
+                                                                  "Myelodysplastic/Myeloproliferative Neoplasms"))
+bDM_ns_intersect = intersect_boostDM_cancer(boostdm_ns, cosmic_cohort, genie_cohort)
+fwrite(bDM_ns_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt.gz"))
+
+#### Cosmic/Genie Intersection Colon ####
+tissue = "blood_pancancer"
+bDM_pancancer_blood_intersect = intersect_boostDM_cancer(boostdm_pancancer, cosmic_cohort, genie_cohort)
+fwrite(bDM_pancancer_blood_intersect, paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_intersect.txt.gz"))
+
 
 # Using Clonal hematopoiesiss - Blood CH data
 boostdm_ch_hg19 = fread("processed_data/boostdm_ch/boostdm_ch_hg19.txt.gz") # BoostDM_ch_RefCDS.R script
@@ -177,6 +207,17 @@ bDM_ch_intersect = intersect_boostDM_cancer(boostdm_ch_hg19, cosmic_cohort, geni
 bdmFile = paste0("processed_data/boostdm/boostdm_genie_cosmic/", tissue, "_boostDM_cancer.txt")
 fwrite(bDM_ch_intersect, bdmFile)
 R.utils::gzip(bdmFile)
+
+#### Generate new table
+bDM_lung_intersect = bDM_lung_intersect |>
+  select(-cosmic_present, -genie_present) |>
+  mutate(driver = boostDM_class)
+bDM_colon_intersect = bDM_colon_intersect |>
+  select(-cosmic_present, -genie_present) |>
+  mutate(driver = boostDM_class)
+bDM_ch_intersect = bDM_ch_intersect |>
+  select(-cosmic_present, -genie_present) |>
+  mutate(driver = boostDM_class)
 
 list = list(
   "Lung cancer" = bDM_lung_intersect,

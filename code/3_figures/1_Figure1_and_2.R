@@ -393,9 +393,8 @@ sampleID_exome_analysis_normal = analyze_probability(gene_counts = gene_counts, 
 save_plots(sampleID_exome_analysis_normal$plot_list, path = "plots/coverage_saturation/", name = "sampleID_normal_exome", width = 7, height = 5)
 save_plots(sampleID_exome_analysis_normal$plot_list, path = "plots/coverage_saturation/", name = "sampleID_normal_exome_wideplot", width = 10, height = 5)
 
-figure_S4A_raw = sampleID_exome_analysis_normal$plot_list$plot_saturation_curve_ci |>
+figure_S4A = sampleID_exome_analysis_normal$plot_list$plot_saturation_curve_ci |>
   prep_plot("A", all_margin = 8)
-figure_S4A = ggrastr::rasterise(figure_S4A_raw)
 
 figure_S4B = sampleID_exome_analysis_normal$plot_list$plot_saturation_age +
   facet_wrap(. ~ tissue, scales = "free_y") +
@@ -404,8 +403,8 @@ figure_S4B = sampleID_exome_analysis_normal$plot_list$plot_saturation_age +
   theme(legend.position = "none")
 figure_S4B = prep_plot(figure_S4B, "B", all_margin = 8)
 figure_S4 = figure_S4A / figure_S4B + plot_layout(widths = c(1.65, 1))
-saveRDS(figure_S4, "manuscript/Supplementary_Figures/Figure_S4/figure_S4_top.rds")
-ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4_old.png", figure_S4, width = 12, height = 8)
+saveRDS(figure_S4, "manuscript/figure_panels/figure_s4/figure_S4_top.rds")
+ggsave("manuscript/figure_panels/figure_s4/Figure_S4_old.png", figure_S4, width = 12, height = 8)
 
 
 # Save as supplementary plot:
@@ -439,7 +438,7 @@ exome_analysis_normal$intersects |>
 #######
 # load pan-cancer BoostDM driver predictions:
 #######
-pancancer_drivers = fread("processed_data/boostdm/boostdm_genie_cosmic/pancancer_boostDM_intersect.txt.gz")
+pancancer_drivers = fread("processed_data/boostdm/boostdm_genie_cosmic/pancancer_boostDM_intersect.txt.gz") |> mutate(driver = boostDM_class)
 
 ## TP53
 TP53_driver_counts = pancancer_drivers[driver == TRUE & gene_name == "TP53",

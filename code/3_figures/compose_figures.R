@@ -100,11 +100,11 @@ table_theme = ttheme_default(
 
 tp53_table = tableGrob(tp53_table_data, rows = NULL, theme = table_theme)
 
-figure_3A = readRDS("manuscript/figure_panels/figure_3/figure_3A.rds") |> prep_plot(label = "A", all_margin = mg)
+figure_3A = readRDS("manuscript/figure_panels/figure_3/figure_3A.rds") |> prep_plot(label = "A", all_margin = 4)
 
 # Load Figure 1A if present, otherwise use an empty placeholder
 if (file.exists("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png")) {
-figure_3B <- fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "B", all_margin = 4)
+figure_3B <- fig("manuscript/figure_panels/figure_3/figure_3B_only_boostDM.png") |> prep_plot(label = "B", all_margin = mg)
 } else {
   print("WARNING: Figure 3B_only_boostDM.png not found — using empty placeholder")
   figure_3B <- ggplot() + theme_void()
@@ -179,7 +179,7 @@ ggsave("manuscript/Figure_5/figure_5.png", figure_5, width = 13, height = 10.5, 
 ggsave("manuscript/Figure_5/figure_5.pdf", figure_5, width = 13, height = 10.5)
 ggsave("manuscript/Figure_5/figure_5.svg", figure_5, width = 13, height = 10.5)
 
-print("Figure4 saved in manuscript/Figure_5/")
+print("Figure5 saved in manuscript/Figure_5/")
 
 ##### Figure 6
 
@@ -202,7 +202,7 @@ print("Figure6 saved in manuscript/Figure_6/")
 print("Composing Figure S5")
 figure_S5A = readRDS("manuscript/figure_panels/figure_s5/Figure_S5A.rds") |> prep_plot("A")
 figure_S5B = readRDS("manuscript/figure_panels/figure_s5/Figure_S5B.rds") |> prep_plot("B")
-figure_S5C = readRDS("manuscript/figure_panels/figure_s5/Figure_S5C.rds") |> prep_plot("C")
+figure_S5C = readRDS("manuscript/figure_panels/figure_s5/Figure_S5C.rds") |> prep_plot("C", all_margin = 8)
 figure_S5 = (figure_S5A | figure_S5B) / figure_S5C
 ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.png", figure_S5, width = 14, height = 12)
 ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.svg", figure_S5, width = 14, height = 12)
@@ -211,8 +211,8 @@ ggsave("manuscript/Supplementary_Figures/Figure_S5/Figure_S5.pdf", figure_S5, wi
 print("Figure S5 saved in manuscript/Supplementary_Figures/Figure_S5/")
 
 # Figure S4
-figure_S4_top = readRDS("manuscript/Supplementary_Figures/Figure_S4/figure_S4_top.rds")
-figure_S4_bottom = readRDS("manuscript/Supplementary_Figures/Figure_S4/Figure_S4_bottom.rds") |> prep_plot("C", all_margin = 5)
+figure_S4_top = readRDS("manuscript/figure_panels/figure_s4/figure_S4_top.rds")
+figure_S4_bottom = readRDS("manuscript/figure_panels/figure_s4/childhood_probs.rds") |> prep_plot("C", all_margin = 5)
 figure_S4 = figure_S4_top / figure_S4_bottom
 #ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4.pdf", figure_S4,  width = 15, height = 13)
 ggsave("manuscript/Supplementary_Figures/Figure_S4/Figure_S4.png", figure_S4, width = 15, height = 13)

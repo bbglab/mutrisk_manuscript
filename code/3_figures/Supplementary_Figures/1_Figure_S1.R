@@ -84,14 +84,14 @@ n_clones_n_donors = meta_age |>
   summarize(number_of_clones = n_distinct(sampleID),
             number_of_donors = n_distinct(donor))
 
-Supp_tables$Supplementary_table_4 = n_clones_n_donors
+Supp_tables$Supplementary_table_3 = n_clones_n_donors
 
 n_clones_n_donors = meta_age |>
   inner_join(sample_wgs_exome) |>
   group_by(tissue, category) |>
   summarize(number_of_clones = n_distinct(sampleID),
             number_of_donors = n_distinct(donor))
-Supp_tables$Supplementary_table_5 = n_clones_n_donors
+Supp_tables$Supplementary_table_4 = n_clones_n_donors
 
 meta_age$age |> max()
 meta_age$age |> min()
@@ -500,6 +500,5 @@ genomic_rate_plot
 ggsave("manuscript/Schematic_poster_presentations/100Kb_genomic_rate.png", genomic_rate_plot, width = 7, height = 4, dpi = 600)
 
 
-# Save supplementary tables 1-3
-# also update this for the exposed conditions:
-openxlsx::write.xlsx(Supp_tables, file = "manuscript/Supplementary_Tables/Supplementary_Tables_1-5.xlsx")
+# Save supplementary tables 1-4
+openxlsx::write.xlsx(Supp_tables, file = "manuscript/Supplementary_Tables/Supplementary_Tables_1-4.xlsx")

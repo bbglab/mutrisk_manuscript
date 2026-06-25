@@ -9,6 +9,7 @@ make_gene_barplot = function(boostdm, ratios, expected_rates,  gene_of_interest,
   mr_drivers = merge_mutrisk_drivers(boostdm, ratios, expected_rates, gene_of_interest, tissue_select, tissue_name, category_select, cell_probabilities,
                                      individual, filter_age = FALSE)
   diff_high_low =  max(mr_drivers$expected_gene_muts$mle) / min(mr_drivers$expected_gene_muts$mle)
+  print(paste0("Gene: ", gene_of_interest, ", Tissue: ", tissue_select, ", Individual: ", individual))
   print(paste0("difference max/min probability: ", round(diff_high_low, 1)))
 
   expected_gene_muts = mr_drivers$expected_gene_muts

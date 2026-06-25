@@ -36,12 +36,18 @@ gene_of_interest = "TP53"
 # Make a barplot showing the probabilitites for TP53 (poster usage)
 include_hotspots = setNames(c(175, 248, 273,282), nm = c("R175",  "R248","R273","R282"))
 
+individuals = list(colon = "O340", lung = "PD34215", blood = "KX008")
+labels = list(
+    colon = paste0("colon  age:", metadata[metadata$donor == individuals$colon, "age"] |> distinct() |> pull()),
+    lung = paste0("lung  age:", metadata[metadata$donor == individuals$lung, "age"] |> distinct() |> pull()),
+    blood = paste0("blood  age:", metadata[metadata$donor == individuals$blood, "age"] |> distinct() |> pull())
+  )
 prob_barplot_lung = make_gene_barplot(boostdm, ratios, expected_rates,  gene_of_interest = "TP53", tissue_select = "lung", category_select = "non-smoker",
-                                      include_hotspots = include_hotspots, individual = "PD34215", cell_probabilities = TRUE) + labs(title = NULL, subtitle = "TP53 - lung", y = NULL)
+                                      include_hotspots = include_hotspots, individual = "PD34215", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$lung), y = NULL)
 prob_barplot_blood = make_gene_barplot(boostdm, ratios, expected_rates,  gene_of_interest = "TP53", tissue_select = "blood",
-                                       include_hotspots = include_hotspots, individual = "KX008", cell_probabilities = TRUE) + labs(title = NULL, subtitle = "TP53 - blood", y = NULL)
+                                       include_hotspots = include_hotspots, individual = "KX008", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$blood), y = NULL)
 prob_barplot_colon = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "TP53", tissue_select = "colon",
-                                       include_hotspots = include_hotspots, individual = "O340", cell_probabilities = TRUE) + labs(title = NULL, subtitle = "TP53 - colon")
+                                       include_hotspots = include_hotspots, individual = "O340", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$colon), y = NULL)
 
 F1B = wrap_plots(prob_barplot_colon, prob_barplot_lung, prob_barplot_blood, ncol = 3, guides = "collect") &
   theme(plot.subtitle = element_text(hjust = 0.5, vjust = 3.5))
@@ -49,20 +55,21 @@ saveRDS(F1B, "manuscript/figure_panels/figure_1/figure_1B.rds")
 
 # Manuscript numbers
 # calculate number of CpG vs non-CpG rate
-# rates_CpG = expected_rates |>
-#   left_join(triplet_match_substmodel) |>
-#   left_join(metadata) |>
-#   filter(tissue == "colon" & category == "normal") |>
-#   mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
-#   group_by(sampleID, age, cpg, trinuc) |>
-#   summarize(sum_rate = sum(mle), .groups = "drop_last") |>
-#   summarize(mean_rate = mean(sum_rate)) |>
-#   pivot_wider(names_from = cpg, values_from = mean_rate) |>
-# Error: unexpected symbol in:
-#  mutate(fold_change = CpG / `non-CpG`) |>
-#   mutate(fold_change = CpG / `non-CpG`) |>
-#   arrange(fold_change) |>
-#   as.data.table()
+rates_CpG = expected_rates |>
+  left_join(triplet_match_substmodel) |>
+  left_join(metadata) |>
+  filter(tissue == "colon" & category == "normal") |>
+  mutate(cpg = ifelse(substr(triplet, 3,3) == "C" & substr(triplet, 7,7) == "G", "CpG", "non-CpG")) |>
+  group_by(sampleID, age, cpg, trinuc) |>
+  summarize(sum_rate = sum(mle), .groups = "drop_last") |>
+  summarize(mean_rate = mean(sum_rate)) |>
+  pivot_wider(names_from = cpg, values_from = mean_rate) |>
+  mutate(fold_change = CpG / `non-CpG`) |>
+  arrange(fold_change) |>
+  as.data.table()
+
+print("CpG vs non-CpG mutation rate differences per sample")
+print(range(rates_CpG$fold_change))
 # max CpG / non-CpG rate: 30, lowest is 6
 
 
@@ -74,6 +81,7 @@ cpg_muts = expected_rates |> left_join(triplet_match_substmodel) |>
   summarize(mean_rate = mean(sum_rate),
             min = min(sum_rate),
             max = max(sum_rate))
+print("CpG vs non-CpG mutation rate differences")
 print(cpg_muts$mean_rate[1]/cpg_muts$mean_rate[2]) # 11.16
 print(cpg_muts$min[1]/cpg_muts$min[2]) # 20.3
 print(cpg_muts$max[1]/cpg_muts$max[2]) # 9.5

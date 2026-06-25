@@ -223,7 +223,7 @@ analyze_probability = function(gene_counts, analysis_name, groupby = "donor",
       colnames(m) = names(expected_rates_list)
 
       for (groupid in names(expected_rates_list)) {
-        print(groupid)
+        # print(groupid)
         expected_rates_sample = expected_rates_list[[groupid]]
         genome_rates = get_adjusted_rates(expected_rates_sample = expected_rates_sample,
                                           gene_counts = gene_counts, ratios_cat = ratios_cat)
@@ -397,7 +397,7 @@ exome_analysis_normal = analyze_probability(gene_counts = gene_counts, analysis_
 
 # plot with a changed probability curve:
 B = exome_analysis_normal$plot_list$plot_saturation_age  + labs(x = "Age (years)") + theme(legend.position = "none")
-ggsave("manuscript/Supplementary_Figures/Figure_SX/child_sc_number_probability_curve.png", exome_analysis_normal$plot_list$plot_saturation_age,
+ggsave("manuscript/Supplementary_Figures/Figure_S4/child_sc_number_probability_curve.png", exome_analysis_normal$plot_list$plot_saturation_age,
        width =6, height = 4, bg = "white")
 
 
@@ -417,8 +417,8 @@ childhood_probabilities = exome_analysis_normal$plot_list$plot_saturation_curve_
      geomtextpath::geom_labelline(data = childhood_cell_n_df, aes(x = mid_estimate, label = label, y = 0.5),
                                  hjust = 0.5, vjust = -0.4, angle = 90, color = "grey30", size = 3.5)
 
-ggsave("manuscript/Supplementary_Figures/Figure_S4/childhood_probs.svg", childhood_probabilities,   width = 17, height = 5)
-saveRDS(childhood_probabilities, "manuscript/Supplementary_Figures/Figure_S4/Figure_S4_bottom.rds")
+ggsave("manuscript/figure_panels/figure_s4/childhood_probs.svg", childhood_probabilities,   width = 17, height = 5)
+saveRDS(childhood_probabilities, "manuscript/figure_panels/figure_s4/childhood_probs.rds")
 #
 #
 # save_plots(exome_analysis_normal$plot_list, path = "plots/coverage_saturation/", name = "normal_exome", width = 7, height = 5)

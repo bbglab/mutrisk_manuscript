@@ -4,10 +4,10 @@
 .httr-oauth
 .DS_Store
 .quarto
-processed_data/
+processed_data*/
 raw_data/
 plots/
-manuscript/
+manuscript*
 renv/library/
 renv/
 

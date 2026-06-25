@@ -1,5 +1,6 @@
 # supplementary figure 5:
 library(Biostrings)
+library(ggpp)
 source("code/0_functions/analysis_variables.R")
 
 # determine the whole-genome trinucleotide rates
@@ -64,10 +65,9 @@ triplets_TP53_driver = cancer_boostdm |> select(-trinuc) |>
 POLD1_counts = POLD1_muts |>
   count(triplet, name = "POLD1 overall\nmutation profile")
 # 1. Define the label mapping
-facet_labels <- c(
-  `TP53 driver mutations` = "Mutations",
-  `POLD1 overall\nmutation profile` = "Mutations",
-  `trinucleotide presence\nwhole genome` = "Mutable sites"
+facet_labels <- tibble(
+  name = c("POLD1 overall\nmutation profile", "TP53 driver mutations", "trinucleotide presence\nwhole genome"),
+  label = c("Mutations", "Mutations", "Mutable sites")
 )
 
 figure_S5C = left_join(POLD1_counts, triplets_TP53_driver) |>
@@ -78,13 +78,16 @@ figure_S5C = left_join(POLD1_counts, triplets_TP53_driver) |>
   mutate(triplet = factor(triplet, levels = TRIPLETS_96)) |>
   ggplot(aes(x = triplet, y= value, fill = type)) + 
   geom_col() +
-  facet_grid(name ~ . , scales = "free_y", switch = "y", labeller = as_labeller(facet_labels)) + 
+  geom_text_npc(data = facet_labels, aes(npcx = -1.05, npcy = 0.5, label = label), angle = 90,
+                hjust = 0.5, vjust = -6.7, size = 4, fontface = "plain") +
+  facet_grid(name ~ . , scales = "free_y") +
+  coord_cartesian(clip = "off") +
   cowplot::theme_cowplot() +
   scale_fill_manual(values = COLORS6) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1, size = 8),
         strip.text = element_text(size = 10),
         strip.placement = "outside",         
-        strip.background = element_blank()) + 
+        strip.background = element_rect(fill = "grey80")) + 
   scale_y_continuous(expand = expansion(mult = c(0, 0.1))) +
   labs(x = NULL, y = NULL)
 
