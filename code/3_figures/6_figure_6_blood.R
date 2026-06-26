@@ -308,10 +308,10 @@ DNMT3A_age_fraction = DNMT3A_age |>
   filter(Individuals >= 2000)
 
 # Manuscript Numbers — fraction of UKB individuals with DNMT3A R882 CH
-# At age 55
-print("DNMT3A R882 CH at age 55:")
+# At age 29
+print("DNMT3A R882 CH at age 29:")
 DNMT3A_age_fraction |>
-  filter(Age == 55) |>
+  filter(Age == 29) |>
   mutate(pct = fraction_DNMT3A_R882 * 100,
          per_500k = fraction_DNMT3A_R882 * 500000) |>
   select(pct, per_500k) |>
@@ -389,6 +389,21 @@ p_newborn_high = get_prob_mutated_N(risk = newborn_rate / ncells, ncells = ncell
 print(paste("Expected mutant HSCs per newborn (1.3M HSCs):", round(newborn_rate * 13, 4)))
 print(paste("P(>=1 R882 HSC at birth, 1.3M HSCs):", round(p_newborn_high * 100, 2), "%"))
 print(paste("People with >=1 R882 HSC out of 500K (1.3M HSCs):", round(p_newborn_high * 500000)))
+
+# Newborns with ≥1 DNMT3A R882 HSC (observed minimum age)
+young_adult_rate = df_DNMT3A_R882 |> filter(age == 29) |> pull(mle) |> mean()
+p_young_adult = get_prob_mutated_N(risk = young_adult_rate / ncells, ncells = ncells, N = 1)
+print(paste("Expected mutant HSCs per young adult of 29y.o. (100K HSCs):", round(young_adult_rate, 4)))
+print(paste("P(>=1 R882 HSC at 29y.o.):", round(p_young_adult * 100, 2), "%"))
+print(paste("People with >=1 R882 HSC out of 500K:", round(p_young_adult * 500000)))
+
+# Same for 1.3 million HSCs
+ncells_high = ncells * 13
+p_young_adult_high = get_prob_mutated_N(risk = young_adult_rate / ncells, ncells = ncells_high, N = 1)
+print(paste("Expected mutant HSCs per young adult of 29y.o. (1.3M HSCs):", round(young_adult_rate * 13, 4)))
+print(paste("P(>=1 R882 HSC at 29y.o., 1.3M HSCs):", round(p_young_adult_high * 100, 2), "%"))
+print(paste("People with >=1 R882 HSC out of 500K (1.3M HSCs):", round(p_young_adult_high * 500000)))
+
 
 # check the effect of setting the intercept at 0
 model_HSCs_0 = lm(mle ~ 0 + age , df_DNMT3A_R882)

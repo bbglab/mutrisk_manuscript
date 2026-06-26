@@ -25,7 +25,7 @@ figure_1_bottom = figure_1C + figure_1D + plot_layout(widths = c(2.5, 1))
 figure_1  = figure_1A / figure_1_middle / figure_1_bottom + plot_layout(heights =  c(1,1, 1))
 
 ggsave("manuscript/Figure_1/figure_1.png", figure_1, width = 16, height = 13)
-#ggsave("manuscript/Figure_1/figure_1.pdf", figure_1, width = 16, height = 13) # due to some error with superscript
+ggsave("manuscript/Figure_1/figure_1.pdf", figure_1, width = 16, height = 13) # due to some error with superscript
 ggsave("manuscript/Figure_1/figure_1.svg", figure_1, width = 16, height = 13)
 
 print("Figure1 saved in manuscript/Figure_1")

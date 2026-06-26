@@ -125,6 +125,16 @@ create_dual_axis_panel <- function(cells_data, crc_data, left_label, right_label
   cell_max  <- max(cells_df$cell_count, na.rm = TRUE)
   trans_factor <- crc_max / cell_max
 
+  # --- return some numbers:
+  # Cases for age 75
+  cases_75 <- crc_df |> filter(age == 75) |> pull(crc_cases_per_million)
+  cells_75 <- cells_df |> filter(age == 79) |> pull(cell_count)
+  print(left_label)
+  print(paste0("Age 75: ", signif(cases_75, 3), " CRC cases per 1M, "))
+
+  print(right_label)
+  print(paste0("Age 79 donor: ", signif(cells_75, 3), " cells with driver mutation"))
+
   ggplot() +
     geom_line(data = crc_df, aes(age, crc_cases_per_million),
               color = COLOR_OUTCOME, linewidth = 1.2) +
