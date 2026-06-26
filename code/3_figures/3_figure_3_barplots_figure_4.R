@@ -1,7 +1,7 @@
 # Script to produce figure 3, and the barplots indicating mutation accumulatoin in figure 4
 library(MutationalPatterns)
 library(ggh4x)
-library(gt)
+# library(gt)
 source("code/0_functions/analysis_variables.R")
 getwd()
 
@@ -47,7 +47,7 @@ prob_barplot_lung = make_gene_barplot(boostdm, ratios, expected_rates,  gene_of_
 prob_barplot_blood = make_gene_barplot(boostdm, ratios, expected_rates,  gene_of_interest = "TP53", tissue_select = "blood",
                                        include_hotspots = include_hotspots, individual = "KX008", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$blood), y = NULL)
 prob_barplot_colon = make_gene_barplot(boostdm, ratios, expected_rates, gene_of_interest = "TP53", tissue_select = "colon",
-                                       include_hotspots = include_hotspots, individual = "O340", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$colon), y = NULL)
+                                       include_hotspots = include_hotspots, individual = "O340", cell_probabilities = TRUE) + labs(title = NULL, subtitle = paste0("TP53 - ", labels$colon))
 
 F1B = wrap_plots(prob_barplot_colon, prob_barplot_lung, prob_barplot_blood, ncol = 3, guides = "collect") &
   theme(plot.subtitle = element_text(hjust = 0.5, vjust = 3.5))
